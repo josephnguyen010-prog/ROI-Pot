@@ -1,0 +1,83 @@
+:root {
+  --bg: #EDE6DC;
+  --surface: #FFFFFF;
+  --surface-2: #F7F1E8;
+  --ink: #241C16;
+  --ink-soft: #6E6054;
+  --line: rgba(36,28,22,0.14);
+  --accent: #C7391F;
+  --accent-strong: #A82C15;
+  --gold: #9C7327;
+  --jade: #2F7A57;
+
+  --app-bg: #1B1613;
+  --app-surface: #241D18;
+  --app-surface-2: #2C2420;
+  --app-ink: #F3ECE2;
+  --app-ink-soft: #B8AA9C;
+  --app-line: rgba(243,236,226,0.14);
+  --app-accent: #FF6B44;
+  --app-gold: #E0AC5C;
+  --app-jade: #5CBE8D;
+
+  --cat-premium: #E0AC5C;
+  --cat-meats: #FF6B44;
+  --cat-seafood: #3FB6C9;
+  --cat-sides: #7CC576;
+  --cat-dessert: #F27CA8;
+  --cat-hotpot: #B37FE0;
+
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --font-app-display: "Fredoka", "Segoe UI", system-ui, sans-serif;
+  --font-app-body: "Nunito", "Segoe UI", system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17120F;
+    --surface: #211A16;
+    --surface-2: #281F1A;
+    --ink: #F1E9DF;
+    --ink-soft: #A99C8E;
+    --line: rgba(241,233,223,0.12);
+    --accent: #FF7A54;
+    --accent-strong: #FF9576;
+    --gold: #D9A94F;
+    --jade: #5CBE8D;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17120F;
+  --surface: #211A16;
+  --surface-2: #281F1A;
+  --ink: #F1E9DF;
+  --ink-soft: #A99C8E;
+  --line: rgba(241,233,223,0.12);
+  --accent: #FF7A54;
+  --accent-strong: #FF9576;
+  --gold: #D9A94F;
+  --jade: #5CBE8D;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  min-height: 100vh;
+}
