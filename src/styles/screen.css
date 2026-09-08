@@ -201,9 +201,13 @@
     inset 0 -3px 3px rgba(0,0,0,0.12),
     0 0 0 3px var(--app-accent);
 }
+/* Width/height are set in JS from the sim's chip radius, so the box the emoji is
+   centred in matches the circle the physics moves around. */
 .plate-chip {
   position: absolute;
   left: 0; top: 0;
+  display: grid;
+  place-items: center;
   font-size: 1.55rem;
   line-height: 1;
   will-change: transform;
