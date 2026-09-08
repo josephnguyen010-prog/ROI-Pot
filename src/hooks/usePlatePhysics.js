@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { artSvg } from '../data/foodArt';
 
 const CHIP_RADIUS = 15;
 const GRAVITY = 1600;     // px/s^2
@@ -16,7 +17,7 @@ const WALL_BOUNCE = 0.35;
 const FLOOR_BOUNCE = 0.28;
 const CHIP_BOUNCE = 0.15;
 const FRICTION = 10;      // per second, while touching something
-const MERGE = 3;          // px of overlap allowed between chips, so a pile packs instead of gridding
+const MERGE = 7;          // px of overlap allowed between chips, so a pile packs instead of gridding
 
 const SLEEP_SPEED = 14;   // px/s
 const SLEEP_TIME = 0.1;   // s slower than that, in contact, before a chip joins the pile
@@ -33,8 +34,8 @@ function clamp(v, lo, hi) {
 // frame — routing that through setState would re-render on every tick.
 export function usePlatePhysics() {
   const plateAreaRef = useRef(null);
-  const pileRef = useRef([]); // settled chips: { el, emoji, r, rot, t, lift, x, y }
-  const activeRef = useRef([]); // falling chips: { el, emoji, x, y, vx, vy, r, rot, rotVel, rest, age, contact }
+  const pileRef = useRef([]); // settled chips: { el, id, r, rot, t, lift, x, y }
+  const activeRef = useRef([]); // falling chips: { el, id, x, y, vx, vy, r, rot, rotVel, rest, age, contact }
   const rafRef = useRef(null);
   const geomRef = useRef(null);
 
@@ -254,7 +255,7 @@ export function usePlatePhysics() {
     const pile = pileRef.current;
     const entry = {
       el: c.el,
-      emoji: c.emoji,
+      id: c.id,
       r: c.r,
       rot: c.rot,
       t: (c.x - g.cx) / g.rx,
@@ -282,7 +283,7 @@ export function usePlatePhysics() {
   function reactivate(o) {
     return {
       el: o.el,
-      emoji: o.emoji,
+      id: o.id,
       x: o.x,
       y: o.y,
       vx: 0,
@@ -323,7 +324,7 @@ export function usePlatePhysics() {
     rafRef.current = requestAnimationFrame(tick);
   }
 
-  function spawnFallingChip(emoji, clientX, clientY) {
+  function spawnFallingChip(id, clientX, clientY) {
     const area = plateAreaRef.current;
     const g = measure();
     if (!area || !g) return;
@@ -334,14 +335,14 @@ export function usePlatePhysics() {
     const el = document.createElement('div');
     el.className = 'plate-chip';
     // The sim treats a chip as a circle of radius r, so give the element that box —
-    // otherwise it is sized by the emoji glyph and its centre drifts off the body.
+    // otherwise it is sized by its contents and its centre drifts off the body.
     el.style.width = `${r * 2}px`;
     el.style.height = `${r * 2}px`;
-    el.textContent = emoji;
+    el.innerHTML = artSvg(id, { chip: true });
     area.appendChild(el);
     const chip = {
       el,
-      emoji,
+      id,
       x,
       y,
       vx: (Math.random() - 0.5) * 50,
@@ -356,17 +357,6 @@ export function usePlatePhysics() {
     activeRef.current.push(chip);
     draw(chip);
     startLoop();
-  }
-
-  function clearPlate() {
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-    activeRef.current.forEach((c) => c.el.remove());
-    pileRef.current.forEach((c) => c.el.remove());
-    activeRef.current = [];
-    pileRef.current = [];
   }
 
   // Keep the settled pile sitting on the plate if it changes size (e.g. the window
@@ -385,5 +375,5 @@ export function usePlatePhysics() {
     };
   }, []);
 
-  return { plateAreaRef, spawnFallingChip, clearPlate };
+  return { plateAreaRef, spawnFallingChip };
 }

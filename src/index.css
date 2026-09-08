@@ -20,12 +20,14 @@
   --app-gold: #E0AC5C;
   --app-jade: #5CBE8D;
 
-  --cat-premium: #E0AC5C;
-  --cat-meats: #FF6B44;
+  --cat-beef: #E0AC5C;
+  --cat-pork: #FF6B44;
+  --cat-sliced: #FF8FA3;
   --cat-seafood: #3FB6C9;
-  --cat-sides: #7CC576;
-  --cat-dessert: #F27CA8;
-  --cat-hotpot: #B37FE0;
+  --cat-sides: #B37FE0;
+  --cat-soy: #F0D45C;
+  --cat-veg: #7CC576;
+  --cat-noodles: #E5DCC3;
 
   --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;

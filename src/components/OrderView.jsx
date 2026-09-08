@@ -16,7 +16,7 @@ export default function OrderView({ tier, onTierChange, activeCat, onCatChange, 
     plateZoneRef,
     plateAreaRef,
     onLand: (item, x, y) => {
-      spawnFallingChip(item.emoji, x, y);
+      spawnFallingChip(item.id, x, y);
       spawnParticles(x, y);
       spawnFloatText(x, y - 10, item.value);
       onAdd(item.id);

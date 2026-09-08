@@ -1,4 +1,5 @@
 import { fmt } from './cart';
+import { artSvg } from '../data/foodArt';
 
 export function ensureFX() {
   let fx = document.getElementById('fx-layer');
@@ -15,11 +16,11 @@ export function setGhostPos(ghost, x, y, scale) {
   ghost.style.transform = `translate(${x}px, ${y}px) translate(-50%,-50%) scale(${scale})`;
 }
 
-export function spawnGhost(emoji, rect) {
+export function spawnGhost(id, rect) {
   const fx = ensureFX();
   const ghost = document.createElement('div');
   ghost.className = 'drag-ghost';
-  ghost.textContent = emoji;
+  ghost.innerHTML = artSvg(id);
   setGhostPos(ghost, rect.left + rect.width / 2, rect.top + rect.height / 2, 1.3);
   fx.appendChild(ghost);
   return ghost;

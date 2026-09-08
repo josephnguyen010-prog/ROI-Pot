@@ -1,4 +1,5 @@
 import { TIERS } from '../data/menu';
+import { artFor, VIEW_BOX } from '../data/foodArt';
 import { fmt, cartEntries, totalValue, verdictFor } from '../utils/cart';
 
 export default function ReceiptView({ tier, cart, onReset }) {
@@ -20,7 +21,13 @@ export default function ReceiptView({ tier, cart, onReset }) {
         <div className="receipt-lines">
           {entries.map((i) => (
             <div className="receipt-line" key={i.id}>
-              <span className="re">{i.emoji}</span>
+              <svg
+                className="re"
+                viewBox={VIEW_BOX}
+                preserveAspectRatio="xMidYMid meet"
+                aria-hidden="true"
+                dangerouslySetInnerHTML={{ __html: artFor(i.id) }}
+              />
               <span className="rq">{i.qty}×</span>
               <span className="rn">{i.name}</span>
               <span className="receipt-leader" />

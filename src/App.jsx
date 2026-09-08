@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import PhoneFrame from './components/PhoneFrame';
 import OrderView from './components/OrderView';
 import ReceiptView from './components/ReceiptView';
-import { TIERS } from './data/menu';
+import { CATS, TIERS } from './data/menu';
 import './App.css';
 import './styles/screen.css';
 
@@ -17,7 +17,7 @@ function readStoredTier() {
 
 export default function App() {
   const [tier, setTier] = useState(readStoredTier);
-  const [activeCat, setActiveCat] = useState('Premium');
+  const [activeCat, setActiveCat] = useState(CATS[0]);
   const [cart, setCart] = useState({});
   const [view, setView] = useState('order');
 
@@ -53,7 +53,7 @@ export default function App() {
           Did you actually<br />eat your <em>money's</em><br />worth?
         </h1>
         <p className="lede">
-          ROI-Pot tallies every plate you order at an all-you-can-eat Korean BBQ against what those cuts
+          ROI-Pot tallies every plate you order at an all-you-can-eat Korean BBQ and hot pot against what those cuts
           would cost at retail — so instead of guessing, you get a real number on who won the meal: you
           or the house.
         </p>
@@ -65,11 +65,11 @@ export default function App() {
         <div className="howto">
           <div className="howto-step">
             <span className="howto-num">1</span>
-            <span className="howto-text"><b>Pick your tier</b> — lunch, dinner, or weekend pricing.</span>
+            <span className="howto-text"><b>Pick your tier</b> — lunch or dinner pricing.</span>
           </div>
           <div className="howto-step">
             <span className="howto-num">2</span>
-            <span className="howto-text"><b>Drag or tap</b> each plate as it comes off the grill.</span>
+            <span className="howto-text"><b>Tap a plate</b> to add it, or press and hold to drag it across.</span>
           </div>
           <div className="howto-step">
             <span className="howto-num">3</span>
