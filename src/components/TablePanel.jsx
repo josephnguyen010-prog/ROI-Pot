@@ -5,40 +5,47 @@ import { MONSTER_SVG, FUNNEL_SVG } from '../data/critters';
 import { fmt, cartEntries, totalItems, totalValue, verdictFor } from '../utils/cart';
 
 // The plate, the break-even meter and the running check. On a wide screen it
-// sits beside the menu; on a narrow one it is a sheet along the bottom, and
-// the check opens out of it.
+// sits beside the menu, with the funnel, slide and monster hanging in a lane
+// off its right-hand side; on a narrow one it is a sheet along the bottom, the
+// check opens out of it, and the three tuck inside.
 export default function TablePanel({ tier, cart, settled, onSettle, onReset, plateZoneRef, plateAreaRef, monsterRef, funnelRef }) {
   const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
   const panelRef = useRef(null);
   const slideRef = useRef(null);
 
-  // The slide runs from the bottom of the funnel to just above the monster,
-  // whatever sits between them, so it is measured rather than laid out.
+  // The funnel's rim sits level with the bottom of the plate, and the slide
+  // runs from the funnel down to just above the monster. Both depend on how
+  // tall everything in the panel is, so they are measured rather than laid out.
   useLayoutEffect(() => {
-    const panel = panelRef.current;
+    const wrap = wrapRef.current;
     const slide = slideRef.current;
-    if (!panel || !slide) return undefined;
+    if (!wrap || !slide) return undefined;
     function fit() {
       const f = funnelRef.current;
       const m = monsterRef.current;
-      if (!f || !m) return;
-      const p = panel.getBoundingClientRect();
+      const z = plateZoneRef.current;
+      if (!f || !m || !z) return;
+      const w = wrap.getBoundingClientRect();
+      const zr = z.getBoundingClientRect();
+      f.style.top = `${zr.bottom - w.top - f.offsetHeight}px`;
       const fr = f.getBoundingClientRect();
       const mr = m.getBoundingClientRect();
-      const top = fr.bottom - p.top - 2;
-      slide.style.left = `${fr.left + fr.width / 2 - p.left}px`;
+      const top = fr.bottom - w.top - 2;
+      slide.style.left = `${fr.left + fr.width / 2 - w.left}px`;
       slide.style.top = `${top}px`;
-      slide.style.height = `${Math.max(0, mr.top - p.top + mr.height * 0.14 - top)}px`;
+      slide.style.height = `${Math.max(0, mr.top - w.top + mr.height * 0.14 - top)}px`;
     }
     fit();
     const ro = new ResizeObserver(fit);
-    ro.observe(panel);
+    ro.observe(wrap);
+    if (panelRef.current) ro.observe(panelRef.current);
     window.addEventListener('resize', fit);
     return () => {
       ro.disconnect();
       window.removeEventListener('resize', fit);
     };
-  }, [funnelRef, monsterRef]);
+  }, [funnelRef, monsterRef, plateZoneRef]);
   const entries = cartEntries(cart);
   const n = totalItems(cart);
   const eaten = totalValue(cart);
@@ -53,101 +60,104 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
   const over = Math.max(0, eaten - paid);
 
   return (
-    <aside className={`table${open ? ' open' : ''}`} aria-label="Your table" ref={panelRef}>
-      <div className="table-head">
-        <h2>Your table</h2>
-        <span>{n} plate{n === 1 ? '' : 's'}</span>
-      </div>
-
-      <div className="plate-zone" ref={plateZoneRef}>
-        <div className="plate-area" ref={plateAreaRef}>
-          <div className="plate-disc" />
+    <div className="table-wrap" ref={wrapRef}>
+      <aside className={`table${open ? ' open' : ''}`} aria-label="Your table" ref={panelRef}>
+        <div className="table-head">
+          <h2>Your table</h2>
+          <span>{n} plate{n === 1 ? '' : 's'}</span>
         </div>
-        {n === 0 && <div className="plate-empty">Your plate</div>}
-        <div className="funnel" ref={funnelRef} aria-hidden="true" dangerouslySetInnerHTML={{ __html: FUNNEL_SVG }} />
-      </div>
 
-      {/* Once settled, the verdict says what the meter was saying, with a number. */}
-      {!settled && <div className="meter">
-        <div className="meter-nums">
-          <span className="eaten">{fmt(eaten)}</span>
-          <span className="of">eaten of <b>{fmt(paid)}</b> paid</span>
+        <div className="plate-zone" ref={plateZoneRef}>
+          <div className="plate-area" ref={plateAreaRef}>
+            <div className="plate-disc" />
+          </div>
+          {n === 0 && <div className="plate-empty">Your plate</div>}
         </div>
-        <div
-          className="bar"
-          role="meter"
-          aria-label="Retail value eaten against what you paid"
-          aria-valuemin={0}
-          aria-valuemax={paid}
-          aria-valuenow={Math.min(eaten, paid)}
-        >
-          <div className="bar-fill" style={{ width: pct(base) }} />
-          <div className="bar-over" style={{ left: pct(paid), width: pct(over) }} />
-          <div className="bar-tick" style={{ left: pct(paid) }} />
+
+        {/* Once settled, the verdict says what the meter was saying, with a number. */}
+        {!settled && <div className="meter">
+          <div className="meter-nums">
+            <span className="eaten">{fmt(eaten)}</span>
+            <span className="of">eaten of <b>{fmt(paid)}</b> paid</span>
+          </div>
+          <div
+            className="bar"
+            role="meter"
+            aria-label="Retail value eaten against what you paid"
+            aria-valuemin={0}
+            aria-valuemax={paid}
+            aria-valuenow={Math.min(eaten, paid)}
+          >
+            <div className="bar-fill" style={{ width: pct(base) }} />
+            <div className="bar-over" style={{ left: pct(paid), width: pct(over) }} />
+            <div className="bar-tick" style={{ left: pct(paid) }} />
+          </div>
+          <p className={`meter-status${delta >= 0 ? ' ahead' : ''}`}>
+            {n === 0
+              ? 'Order something to start the tab.'
+              : delta < 0
+                ? <><b>{fmt(-delta)}</b> to go before you break even</>
+                : <>Up <b>{fmt(delta)}</b> on the house</>}
+          </p>
+        </div>}
+
+        {settled && (
+          <div className={`verdict tone-${v.tone}`} role="status">
+            <span className="verdict-label">{v.label}</span>
+            <span className="verdict-amt">{delta >= 0 ? '+' : '−'}{fmt(Math.abs(delta))}</span>
+            <p>{v.text} {fmt(eaten)} eaten against {fmt(paid)} paid.</p>
+          </div>
+        )}
+
+        <div className="check">
+          {entries.length === 0
+            ? <p className="check-empty">Nothing ordered yet.</p>
+            : entries.map((i) => (
+              <div className="line" key={i.id}>
+                <svg
+                  viewBox={VIEW_BOX}
+                  preserveAspectRatio="xMidYMid meet"
+                  aria-hidden="true"
+                  dangerouslySetInnerHTML={{ __html: artFor(i.id) }}
+                />
+                <span className="q">{i.qty}&times;</span>
+                <span>{i.name}</span>
+                <span className="amt">{fmt(i.value * i.qty)}</span>
+              </div>
+            ))}
         </div>
-        <p className={`meter-status${delta >= 0 ? ' ahead' : ''}`}>
-          {n === 0
-            ? 'Order something to start the tab.'
-            : delta < 0
-              ? <><b>{fmt(-delta)}</b> to go before you break even</>
-              : <>Up <b>{fmt(delta)}</b> on the house</>}
-        </p>
-      </div>}
 
-      {settled && (
-        <div className={`verdict tone-${v.tone}`} role="status">
-          <span className="verdict-label">{v.label}</span>
-          <span className="verdict-amt">{delta >= 0 ? '+' : '−'}{fmt(Math.abs(delta))}</span>
-          <p>{v.text} {fmt(eaten)} eaten against {fmt(paid)} paid.</p>
-        </div>
-      )}
-
-      <div className="check">
-        {entries.length === 0
-          ? <p className="check-empty">Nothing ordered yet.</p>
-          : entries.map((i) => (
-            <div className="line" key={i.id}>
-              <svg
-                viewBox={VIEW_BOX}
-                preserveAspectRatio="xMidYMid meet"
-                aria-hidden="true"
-                dangerouslySetInnerHTML={{ __html: artFor(i.id) }}
-              />
-              <span className="q">{i.qty}&times;</span>
-              <span>{i.name}</span>
-              <span className="amt">{fmt(i.value * i.qty)}</span>
-            </div>
-          ))}
-      </div>
-
-      <div className="slide" ref={slideRef} aria-hidden="true" />
-
-      <div className="actions">
-        <button
-          type="button"
-          className="btn ghost only-narrow"
-          aria-expanded={open}
-          onClick={() => setOpen((o) => !o)}
-        >
-          {open ? 'Hide check' : 'View check'}
-        </button>
-        {settled ? (
-          <button type="button" className="btn ghost" onClick={() => { onReset(); setOpen(false); }}>
-            New visit
-          </button>
-        ) : (
+        <div className="actions">
           <button
             type="button"
-            className="btn"
-            disabled={n === 0}
-            onClick={() => { onSettle(); setOpen(true); }}
+            className="btn ghost only-narrow"
+            aria-expanded={open}
+            onClick={() => setOpen((o) => !o)}
           >
-            Settle the check
+            {open ? 'Hide check' : 'View check'}
           </button>
-        )}
-        {/* Eats whatever the bulldozer pushes off the plate once it fills up. */}
-        <div className="monster" ref={monsterRef} aria-hidden="true" dangerouslySetInnerHTML={{ __html: MONSTER_SVG }} />
-      </div>
-    </aside>
+          {settled ? (
+            <button type="button" className="btn ghost" onClick={() => { onReset(); setOpen(false); }}>
+              New visit
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn"
+              disabled={n === 0}
+              onClick={() => { onSettle(); setOpen(true); }}
+            >
+              Settle the check
+            </button>
+          )}
+        </div>
+      </aside>
+
+      {/* Once the plate fills up the bulldozer shoves it into the funnel, and the
+          food rides the slide down to the monster. */}
+      <div className="funnel" ref={funnelRef} aria-hidden="true" dangerouslySetInnerHTML={{ __html: FUNNEL_SVG }} />
+      <div className="slide" ref={slideRef} aria-hidden="true" />
+      <div className="monster" ref={monsterRef} aria-hidden="true" dangerouslySetInnerHTML={{ __html: MONSTER_SVG }} />
+    </div>
   );
 }

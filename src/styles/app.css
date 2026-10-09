@@ -63,7 +63,8 @@
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
+  /* The table's column carries the slide's lane as well as the panel. */
+  grid-template-columns: minmax(0, 1fr) 418px;
   gap: 36px;
   margin-top: 22px;
   align-items: start;
@@ -197,9 +198,15 @@
 .dish-qty:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
 /* ---------- the table ---------- */
-.table {
+/* The panel plus a lane down its right-hand side for the funnel, the slide
+   and the monster. The wrap is what sticks; the three hang off it. */
+.table-wrap {
   position: sticky;
   top: 20px;
+  padding-right: 58px;
+}
+.table {
+  position: relative;
   display: flex;
   flex-direction: column;
   /* Held to the window, so the button stays in reach; the check scrolls. */
@@ -239,11 +246,11 @@
 .plate-area { position: absolute; inset: 0; }
 .plate-disc {
   position: absolute;
-  left: 41%;
+  left: 50%;
   bottom: 16px;
   transform: translateX(-50%);
-  width: 70%;
-  max-width: 230px;
+  width: 82%;
+  max-width: 260px;
   height: 28px;
   border-radius: 50%;
   background: radial-gradient(ellipse 60% 65% at 50% 32%, #FFFFFF 0%, #FFFFFF 48%, #EFEAE0 72%, #D9D1C1 90%, #C6BCA9 100%);
@@ -261,7 +268,7 @@
 }
 .plate-empty {
   position: absolute;
-  inset: 0 18% 48px 0;
+  inset: 0 0 48px;
   display: grid;
   place-items: center;
   color: rgba(255, 255, 255, 0.4);
@@ -283,15 +290,10 @@
 .plate-chip svg { width: 100%; height: 100%; overflow: visible; }
 
 /* ---------- the funnel, the slide and the monster ---------- */
-/* The right-hand strip of the panel is the slide's: content stops short of it.
-   Scoped to .table so it outranks the section rules further down. */
-.table .meter, .table .check { padding-right: 56px; }
-.table .verdict { margin-right: 56px; }
-
 .funnel {
   position: absolute;
-  right: 10px;
-  bottom: 0;
+  z-index: 2;
+  right: 4px; /* top is set from the plate's position */
   width: 46px;
   height: 66px;
   pointer-events: none;
@@ -317,11 +319,12 @@
       color-mix(in srgb, var(--ink) 12%, transparent));
 }
 
-.actions { align-items: flex-end; }
 .monster {
-  flex: 0 0 auto;
+  position: absolute;
+  z-index: 2;
+  right: -2px;
+  bottom: 14px; /* level with the checkout button */
   width: 60px;
-  margin: 0 -4px -6px 2px;
   pointer-events: none;
 }
 .monster svg {
@@ -528,13 +531,17 @@
   .layout { grid-template-columns: minmax(0, 1fr); margin-top: 14px; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 18px 12px; }
 
-  .table {
+  /* No room beside a phone-width sheet, so the lane folds into it. */
+  .table-wrap {
     position: fixed;
     top: auto;
     left: 0;
     right: 0;
     bottom: 0;
     z-index: 20;
+    padding-right: 0;
+  }
+  .table {
     max-height: 86vh;
     border-radius: 16px 16px 0 0;
     border-bottom: 0;
@@ -543,18 +550,18 @@
   }
   .table-head { display: none; }
   .plate-zone { height: 92px; margin-top: 10px; }
-  .plate-disc { height: 22px; bottom: 10px; max-width: 220px; }
+  .plate-disc { left: 41%; width: 70%; height: 22px; bottom: 10px; max-width: 220px; }
   .plate-empty { inset: 0 18% 32px 0; }
-  .funnel { width: 36px; height: 44px; right: 12px; }
+  .funnel { width: 36px; height: 44px; right: 14px; }
   .dozer { width: 50px; }
-  .meter { padding: 10px 16px 0; }
+  .meter { padding: 10px 64px 0 16px; } /* clear of the slide */
   .eaten { font-size: 24px; }
   .bar { margin: 10px 0 6px; }
   .check, .verdict { display: none; }
   .table.open .check { display: block; max-height: 38vh; }
   .table.open .verdict { display: block; }
-  .actions { gap: 8px; padding: 10px 12px 14px 16px; }
+  .actions { gap: 8px; padding: 10px 66px 14px 16px; }
   .btn { padding: 11px 8px; font-size: 14px; white-space: nowrap; }
-  .monster { width: 46px; }
+  .monster { width: 46px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); }
   .only-narrow { display: block; }
 }
