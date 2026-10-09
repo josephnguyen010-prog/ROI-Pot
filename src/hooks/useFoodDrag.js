@@ -7,6 +7,12 @@ const SLOP = 8;
 // scroll. Short enough not to feel sticky, long enough that a flick scrolls.
 const HOLD_MS = 220;
 
+function isOver(el, x, y) {
+  if (!el) return false;
+  const r = el.getBoundingClientRect();
+  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
+
 // Three gestures share one code path:
 //   tap            - press and release without moving -> the plate
 //   press and drag - hold, then move -> follow the pointer, drop on the plate
@@ -64,10 +70,7 @@ export function useFoodDrag({ plateZoneRef, plateAreaRef, onLand }) {
 
     setGhostPos(g.ghost, e.clientX, e.clientY, 1.3);
     const zone = plateZoneRef.current;
-    if (!zone) return;
-    const r = zone.getBoundingClientRect();
-    const over = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
-    zone.classList.toggle('hover', over);
+    if (zone) zone.classList.toggle('hover', isOver(zone, e.clientX, e.clientY));
   }
 
   function onPointerCancel() {
@@ -95,13 +98,7 @@ export function useFoodDrag({ plateZoneRef, plateAreaRef, onLand }) {
 
     // A tap, or a hold that never moved, always lands. A real drag only lands
     // if it was released over the plate.
-    let land = true;
-    if (g.dragging) {
-      const zoneRect = zone ? zone.getBoundingClientRect() : null;
-      land = !!zoneRect
-        && e.clientX >= zoneRect.left && e.clientX <= zoneRect.right
-        && e.clientY >= zoneRect.top && e.clientY <= zoneRect.bottom;
-    }
+    const land = !g.dragging || isOver(zone, e.clientX, e.clientY);
 
     // The tap path has no ghost yet - give it one so the food still flies.
     const ghost = g.ghost || spawnGhost(g.item.id, g.cardRect);

@@ -1,6 +1,6 @@
 import { TIERS } from '../data/menu';
 import { artFor, VIEW_BOX } from '../data/foodArt';
-import { fmt, cartEntries, totalValue, verdictFor } from '../utils/cart';
+import { fmt, cartEntries, totalItems, totalValue, verdictFor } from '../utils/cart';
 
 export default function ReceiptView({ tier, cart, onReset }) {
   const entries = cartEntries(cart);
@@ -8,7 +8,7 @@ export default function ReceiptView({ tier, cart, onReset }) {
   const paid = TIERS[tier].price;
   const delta = value - paid;
   const v = verdictFor(delta);
-  const plateCount = entries.reduce((s, i) => s + i.qty, 0);
+  const plateCount = totalItems(cart);
 
   return (
     <div className="view-enter">

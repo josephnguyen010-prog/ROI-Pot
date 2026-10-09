@@ -1,7 +1,7 @@
 import { fmt } from './cart';
 import { artSvg } from '../data/foodArt';
 
-export function ensureFX() {
+function ensureFX() {
   let fx = document.getElementById('fx-layer');
   if (!fx) {
     fx = document.createElement('div');
