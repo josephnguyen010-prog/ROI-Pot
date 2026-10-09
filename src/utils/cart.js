@@ -14,9 +14,10 @@ export function totalItems(cart) {
   return cartEntries(cart).reduce((s, i) => s + i.qty, 0);
 }
 
+// `tone` picks the colour: win, even or loss.
 export function verdictFor(delta) {
-  if (delta > 15) return { label: '🔥 Buffet Crushed', color: 'var(--app-jade)', text: `You out-ate the house by ${fmt(delta)}.` };
-  if (delta > 0) return { label: '✅ You Won', color: 'var(--app-jade)', text: `You came out ahead by ${fmt(delta)}.` };
-  if (delta > -5) return { label: '🤝 Break-Even', color: 'var(--app-gold)', text: `Almost exactly even — ${fmt(Math.abs(delta))} off.` };
-  return { label: '🏠 House Won', color: 'var(--app-accent)', text: `The kitchen made ${fmt(Math.abs(delta))} on you this round.` };
+  if (delta > 15) return { tone: 'win', label: 'You beat the buffet', text: 'You ate well past what you paid. The house lost money on this table.' };
+  if (delta > 0) return { tone: 'win', label: 'You came out ahead', text: 'More on the plate than on the bill. Narrowly.' };
+  if (delta > -5) return { tone: 'even', label: 'About even', text: 'Within a few dollars of the bill either way. Call it a fair trade.' };
+  return { tone: 'loss', label: 'The house won', text: 'The kitchen made money on you this round. Order the steak next time.' };
 }

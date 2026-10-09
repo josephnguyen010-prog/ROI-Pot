@@ -1,14 +1,15 @@
-import { CATS, CAT_COLORS } from '../data/menu';
+import { CATS } from '../data/menu';
 
 export default function CategoryTabs({ activeCat, onChange }) {
   return (
-    <div className="cat-row">
+    <div className="tabs" role="tablist" aria-label="Menu sections">
       {CATS.map((c) => (
         <button
           key={c}
           type="button"
-          className={`cat-chip ${c === activeCat ? 'active' : ''}`}
-          style={{ '--chip-color': CAT_COLORS[c] }}
+          role="tab"
+          className="tab"
+          aria-selected={c === activeCat}
           onClick={() => onChange(c)}
         >
           {c}

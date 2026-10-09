@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { artSvg } from '../data/foodArt';
 
-const CHIP_RADIUS = 15;
+const CHIP_RADIUS = 17;
 const GRAVITY = 1600;     // px/s^2
 const MAX_FALL = 900;     // px/s terminal speed — a chip can never clear its own radius in one substep
 const SUB_DT = 1 / 240;   // fixed physics substep; each frame's dt is chopped into these
@@ -359,6 +359,13 @@ export function usePlatePhysics() {
     startLoop();
   }
 
+  // Clear the plate for a new visit: every chip, settled or still falling.
+  function clearPlate() {
+    for (const c of pileRef.current.concat(activeRef.current)) c.el.remove();
+    pileRef.current = [];
+    activeRef.current = [];
+  }
+
   // Keep the settled pile sitting on the plate if it changes size (e.g. the window
   // resizes) — chips are stored relative to the disc for exactly this reason.
   useEffect(() => {
@@ -375,5 +382,5 @@ export function usePlatePhysics() {
     };
   }, []);
 
-  return { plateAreaRef, spawnFallingChip };
+  return { plateAreaRef, spawnFallingChip, clearPlate };
 }

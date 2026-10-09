@@ -16,7 +16,7 @@ too. Treat the totals as a demonstration of the idea, not as real figures.
 
 ## Stack
 
-React + Vite, plain CSS (no component library). No backend — all menu data and pricing live in
+React + Vite, plain CSS (no component library), light and dark themes. A web page, not a phone mockup: on a wide screen the menu and your table sit side by side, and on a phone the table becomes a sheet along the bottom. No backend — all menu data and pricing live in
 [`src/data/menu.js`](src/data/menu.js).
 
 ```
@@ -27,7 +27,9 @@ src/
   utils/fx.js           drag ghost / particle / floating-text DOM effects
   hooks/usePlatePhysics.js   the falling-food gravity/collision sim
   hooks/useFoodDrag.js       pointer-based drag-and-drop + tap-to-add
-  components/           UI split by piece (tiers, categories, food grid, plate, receipt)
+  components/TablePanel.jsx  the plate, the break-even meter, the check and the verdict
+  components/           the tier switch, menu tabs and food grid
+  styles/app.css        layout and components; index.css holds the colour tokens
 ```
 
 ## Run it

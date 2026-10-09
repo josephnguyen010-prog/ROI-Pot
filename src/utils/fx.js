@@ -26,13 +26,12 @@ export function spawnGhost(id, rect) {
   return ghost;
 }
 
+// A few grains of spice thrown off where the plate lands.
 export function spawnParticles(x, y) {
   const fx = ensureFX();
-  const glyphs = ['✨', '⭐', '💥'];
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 7; i++) {
     const p = document.createElement('div');
-    p.className = 'particle';
-    p.textContent = glyphs[i % glyphs.length];
+    p.className = 'spark';
     p.style.left = x + 'px';
     p.style.top = y + 'px';
     fx.appendChild(p);
@@ -42,8 +41,8 @@ export function spawnParticles(x, y) {
     const dy = Math.sin(angle) * dist - 6;
     const anim = p.animate(
       [
-        { transform: 'translate(-50%,-50%) translate(0,0) scale(0.6)', opacity: 1 },
-        { transform: `translate(-50%,-50%) translate(${dx}px, ${dy}px) scale(1)`, opacity: 0 },
+        { transform: 'translate(0,0) scale(1)', opacity: 1 },
+        { transform: `translate(${dx}px, ${dy}px) scale(0.4)`, opacity: 0 },
       ],
       { duration: 450 + Math.random() * 150, easing: 'ease-out', fill: 'forwards' }
     );

@@ -3,16 +3,17 @@ import { fmt } from '../utils/cart';
 
 export default function TierSelector({ tier, onChange }) {
   return (
-    <div className="tier-row">
+    <div className="tiers" role="group" aria-label="What you paid">
       {Object.entries(TIERS).map(([key, t]) => (
         <button
           key={key}
           type="button"
-          className={`tier-btn ${key === tier ? 'active' : ''}`}
+          className="tier"
+          aria-pressed={key === tier}
           onClick={() => onChange(key)}
         >
-          {t.label}
-          <span className="p">{fmt(t.price)}</span>
+          <small>{t.label}</small>
+          <b>{fmt(t.price)}</b>
         </button>
       ))}
     </div>

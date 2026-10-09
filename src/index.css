@@ -1,66 +1,50 @@
+/* Paper and charcoal, one red. The food art is drawn for a black slate, so the
+   slate stays dark in both themes and everything else flips around it. */
 :root {
-  --bg: #EDE6DC;
-  --surface: #FFFFFF;
-  --surface-2: #F7F1E8;
-  --ink: #241C16;
-  --ink-soft: #6E6054;
-  --line: rgba(36,28,22,0.14);
-  --accent: #C7391F;
-  --accent-strong: #A82C15;
-  --gold: #9C7327;
-  --jade: #2F7A57;
+  --paper: #F3EEE6;
+  --surface: #FFFDF9;
+  --ink: #1C1612;
+  --ink-2: #5E5248;
+  --ink-3: #8C7F73;
+  --line: rgba(28, 22, 18, 0.13);
+  --slate: #221C18;
+  --red: #C2361B;
+  --win: #23774F;
+  --even: #A0700F;
 
-  --app-bg: #1B1613;
-  --app-surface: #241D18;
-  --app-surface-2: #2C2420;
-  --app-ink: #F3ECE2;
-  --app-ink-soft: #B8AA9C;
-  --app-line: rgba(243,236,226,0.14);
-  --app-accent: #FF6B44;
-  --app-gold: #E0AC5C;
-  --app-jade: #5CBE8D;
+  --font: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
 
-  --cat-beef: #E0AC5C;
-  --cat-pork: #FF6B44;
-  --cat-sliced: #FF8FA3;
-  --cat-seafood: #3FB6C9;
-  --cat-sides: #B37FE0;
-  --cat-soy: #F0D45C;
-  --cat-veg: #7CC576;
-  --cat-noodles: #E5DCC3;
-
-  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
-  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
-  --font-app-display: "Fredoka", "Segoe UI", system-ui, sans-serif;
-  --font-app-body: "Nunito", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #17120F;
-    --surface: #211A16;
-    --surface-2: #281F1A;
-    --ink: #F1E9DF;
-    --ink-soft: #A99C8E;
-    --line: rgba(241,233,223,0.12);
-    --accent: #FF7A54;
-    --accent-strong: #FF9576;
-    --gold: #D9A94F;
-    --jade: #5CBE8D;
+    --paper: #15110E;
+    --surface: #1F1915;
+    --ink: #F2EBE1;
+    --ink-2: #B5A898;
+    --ink-3: #85786B;
+    --line: rgba(242, 235, 225, 0.12);
+    --slate: #2A221C;
+    --red: #EE6646;
+    --win: #4FBF87;
+    --even: #E0AC5C;
+    color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #17120F;
-  --surface: #211A16;
-  --surface-2: #281F1A;
-  --ink: #F1E9DF;
-  --ink-soft: #A99C8E;
-  --line: rgba(241,233,223,0.12);
-  --accent: #FF7A54;
-  --accent-strong: #FF9576;
-  --gold: #D9A94F;
-  --jade: #5CBE8D;
+  --paper: #15110E;
+  --surface: #1F1915;
+  --ink: #F2EBE1;
+  --ink-2: #B5A898;
+  --ink-3: #85786B;
+  --line: rgba(242, 235, 225, 0.12);
+  --slate: #2A221C;
+  --red: #EE6646;
+  --win: #4FBF87;
+  --even: #E0AC5C;
+  color-scheme: dark;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -74,12 +58,10 @@
   }
 }
 
-html, body, #root { height: 100%; }
-
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--paper);
   color: var(--ink);
-  font-family: var(--font-body);
-  min-height: 100vh;
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
 }
