@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { artSvg } from '../data/foodArt';
+import { DOZER_SVG } from '../data/critters';
 
 const CHIP_RADIUS = 17;
 const GRAVITY = 1600;     // px/s^2
@@ -22,8 +23,18 @@ const MERGE = 7;          // px of overlap allowed between chips, so a pile pack
 const SLEEP_SPEED = 14;   // px/s
 const SLEEP_TIME = 0.1;   // s slower than that, in contact, before a chip joins the pile
 const MAX_AGE = 4;        // s — a chip settles eventually no matter what it is doing
-const MAX_PILE = 24;      // chips kept on the plate before the bottom of the heap is cleared away
-const TRIM = 4;           // cleared in batches, so the heap re-settles now and then rather than every drop
+
+// When the plate fills up, a bulldozer drives across it and shoves the lot off
+// the far edge into the monster waiting beside the plate.
+const FULL = 14;          // chips on the plate before the dozer is sent in: about two layers
+const DOZER_SPEED = 150;  // px/s across the plate
+const LOAD_ROWS = 3;      // the heap in front of the blade is this many chips tall
+const GRAB = 16;          // per second: how quickly a chip catches up to its place on the blade
+const FLIGHT = 0.34;      // s from the plate edge into the monster's mouth
+const FLIGHT_GAP = 0.045; // s between chips going in, so it reads as a stream of bites
+
+const REDUCED = typeof window !== 'undefined'
+  && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 function clamp(v, lo, hi) {
   return v < lo ? lo : v > hi ? hi : v;
@@ -38,6 +49,8 @@ export function usePlatePhysics() {
   const activeRef = useRef([]); // falling chips: { el, id, x, y, vx, vy, r, rot, rotVel, rest, age, contact }
   const rafRef = useRef(null);
   const geomRef = useRef(null);
+  const monsterRef = useRef(null);
+  const sweepRef = useRef(null); // { el, w, h, x, phase, load, flying }
 
   // The plate is drawn in CSS, so measure the disc rather than restating its size
   // here — the floor and walls then track whatever the stylesheet actually says.
@@ -75,7 +88,8 @@ export function usePlatePhysics() {
   }
 
   function draw(c) {
-    c.el.style.transform = `translate(${c.x - c.r}px, ${c.y - c.r}px) rotate(${c.rot}deg)`;
+    const scale = c.scale == null ? '' : ` scale(${c.scale})`;
+    c.el.style.transform = `translate(${c.x - c.r}px, ${c.y - c.r}px) rotate(${c.rot}deg)${scale}`;
   }
 
   // Pile chips are stored relative to the plate (across it, and above its surface)
@@ -266,39 +280,152 @@ export function usePlatePhysics() {
     pile.push(entry);
     draw(entry);
 
-    // Keep the mound on the plate. Clearing the oldest chips leaves holes under the
-    // ones stacked on them, so what remains is re-dropped and settles into a fresh
-    // heap — done TRIM at a time, since re-settling on every single drop past the
-    // cap would have the whole plate twitching each time food is added.
-    if (pile.length > MAX_PILE + TRIM) {
-      for (const gone of pile.splice(0, TRIM)) {
-        gone.el.style.transition = 'opacity 220ms ease';
-        gone.el.style.opacity = '0';
-        setTimeout(() => gone.el.remove(), 220);
-      }
-      for (const o of pile.splice(0, pile.length)) activeRef.current.push(reactivate(o));
-    }
+    if (pile.length >= FULL) startSweep(g);
   }
 
-  function reactivate(o) {
-    return {
-      el: o.el,
-      id: o.id,
-      x: o.x,
-      y: o.y,
-      vx: 0,
-      vy: 0,
-      r: o.r,
-      rot: o.rot,
-      rotVel: 0,
-      rest: 0,
-      age: 0,
-      contact: false,
+  /* ---------- the bulldozer and the monster ---------- */
+
+  function monster(cls, on = true) {
+    const m = monsterRef.current;
+    if (m) m.classList.toggle(cls, on);
+  }
+
+  // One bite: restart the chomp animation even if the last one is still running.
+  function chomp() {
+    const m = monsterRef.current;
+    if (!m) return;
+    m.classList.remove('chomp');
+    void m.offsetWidth;
+    m.classList.add('chomp');
+  }
+
+  // Where food goes in, in plate-area coordinates. The monster faces left, so
+  // its mouth is on the near side of its body.
+  function mouthAt() {
+    const m = monsterRef.current;
+    const area = plateAreaRef.current;
+    if (!m || !area) return null;
+    const r = m.getBoundingClientRect();
+    const a = area.getBoundingClientRect();
+    return { x: r.left - a.left + r.width * 0.26, y: r.top - a.top + r.height * 0.66 };
+  }
+
+  function startSweep(g) {
+    if (sweepRef.current) return;
+    const area = plateAreaRef.current;
+    if (!area) return;
+
+    // No dozer for anyone who has asked for less motion: the plate just empties.
+    if (REDUCED) {
+      for (const c of pileRef.current.concat(activeRef.current)) c.el.remove();
+      pileRef.current = [];
+      activeRef.current = [];
+      chomp();
+      return;
+    }
+
+    const el = document.createElement('div');
+    el.className = 'dozer driving';
+    el.innerHTML = DOZER_SVG;
+    area.appendChild(el);
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    sweepRef.current = {
+      el, w, h,
+      x: g.cx - g.rx - w - 6, // just off the near rim, blade first
+      phase: 'push',
+      load: [],
+      flying: [],
     };
+    monster('hungry');
+    startLoop();
+  }
+
+  function stepSweep(g, dt) {
+    const s = sweepRef.current;
+    const edge = g.cx + g.rx;
+
+    if (s.phase === 'push') {
+      s.x = Math.min(s.x + DOZER_SPEED * dt, edge - s.w);
+      const front = s.x + s.w;
+
+      // Anything the blade reaches comes out of the sim and onto the blade.
+      for (const list of [pileRef.current, activeRef.current]) {
+        for (let i = list.length - 1; i >= 0; i--) {
+          const c = list[i];
+          if (c.x - c.r * 0.5 < front) {
+            list.splice(i, 1);
+            s.load.push(c);
+          }
+        }
+      }
+
+      // Heap the load against the blade, a few chips tall, spilling forward.
+      s.load.forEach((c, i) => {
+        const col = Math.floor(i / LOAD_ROWS);
+        const row = i % LOAD_ROWS;
+        const tx = front + c.r * 0.7 + col * c.r * 1.1 + (row % 2) * c.r * 0.4;
+        const ty = g.base - c.r - row * c.r * 1.15;
+        const k = Math.min(1, dt * GRAB);
+        c.x += (tx - c.x) * k;
+        c.y += (ty - c.y) * k;
+        draw(c);
+      });
+
+      // Over the edge, each chip leaves the heap and arcs into the mouth. Once
+      // the blade is at the rim, whatever is left goes in behind it.
+      const atRim = s.x + s.w >= edge;
+      for (let i = s.load.length - 1; i >= 0; i--) {
+        const c = s.load[i];
+        if (atRim || c.x - c.r * 0.3 > edge) {
+          s.load.splice(i, 1);
+          c.fly = { x0: c.x, y0: c.y, t: -FLIGHT_GAP * s.flying.length };
+          s.flying.push(c);
+        }
+      }
+      if (atRim && s.load.length === 0) s.phase = 'feed';
+    }
+
+    const mouth = mouthAt();
+    for (let i = s.flying.length - 1; i >= 0; i--) {
+      const c = s.flying[i];
+      c.fly.t += dt;
+      if (c.fly.t < 0) continue;
+      const p = Math.min(1, c.fly.t / FLIGHT);
+      const to = mouth || { x: c.fly.x0 + 40, y: c.fly.y0 + 20 };
+      c.x = c.fly.x0 + (to.x - c.fly.x0) * p;
+      c.y = c.fly.y0 + (to.y - c.fly.y0) * p - Math.sin(Math.PI * p) * 20;
+      c.scale = 1 - 0.6 * p;
+      draw(c);
+      if (p >= 1) {
+        c.el.remove();
+        s.flying.splice(i, 1);
+        chomp();
+      }
+    }
+
+    if (s.phase === 'feed' && s.flying.length === 0) {
+      s.phase = 'back';
+      monster('hungry', false);
+      monster('full');
+      setTimeout(() => monster('full', false), 700);
+    }
+    if (s.phase === 'back') {
+      s.x -= DOZER_SPEED * 1.5 * dt;
+      if (s.x + s.w < g.cx - g.rx - 12) {
+        s.el.remove();
+        sweepRef.current = null;
+        return;
+      }
+    }
+
+    s.el.classList.toggle('driving', s.phase !== 'feed');
+    s.el.style.transform = `translate(${s.x}px, ${g.base - s.h + 3}px)`;
   }
 
   function startLoop() {
     if (rafRef.current) return;
+    // oxlint-disable-next-line react/purity -- only ever started from event handlers
     let last = performance.now();
     const tick = (now) => {
       const frame = Math.min((now - last) / 1000, MAX_FRAME);
@@ -306,7 +433,7 @@ export function usePlatePhysics() {
       const g = measure();
       const active = activeRef.current;
 
-      if (g && active.length) {
+      if (g && (active.length || sweepRef.current)) {
         if (!sameGeom(g, geomRef.current)) {
           geomRef.current = g;
           layoutPile(g);
@@ -317,9 +444,11 @@ export function usePlatePhysics() {
           step(g, Math.min(left, SUB_DT));
         }
         for (const c of active) draw(c);
+        if (sweepRef.current) stepSweep(g, frame);
       }
 
-      rafRef.current = active.length ? requestAnimationFrame(tick) : null;
+      const busy = activeRef.current.length || sweepRef.current;
+      rafRef.current = busy ? requestAnimationFrame(tick) : null;
     };
     rafRef.current = requestAnimationFrame(tick);
   }
@@ -364,6 +493,13 @@ export function usePlatePhysics() {
     for (const c of pileRef.current.concat(activeRef.current)) c.el.remove();
     pileRef.current = [];
     activeRef.current = [];
+    const s = sweepRef.current;
+    if (s) {
+      for (const c of s.load.concat(s.flying)) c.el.remove();
+      s.el.remove();
+      sweepRef.current = null;
+      monster('hungry', false);
+    }
   }
 
   // Keep the settled pile sitting on the plate if it changes size (e.g. the window
@@ -382,5 +518,5 @@ export function usePlatePhysics() {
     };
   }, []);
 
-  return { plateAreaRef, spawnFallingChip, clearPlate };
+  return { plateAreaRef, monsterRef, spawnFallingChip, clearPlate };
 }

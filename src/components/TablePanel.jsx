@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { TIERS } from '../data/menu';
 import { artFor, VIEW_BOX } from '../data/foodArt';
+import { MONSTER_SVG } from '../data/critters';
 import { fmt, cartEntries, totalItems, totalValue, verdictFor } from '../utils/cart';
 
 // The plate, the break-even meter and the running check. On a wide screen it
 // sits beside the menu; on a narrow one it is a sheet along the bottom, and
 // the check opens out of it.
-export default function TablePanel({ tier, cart, settled, onSettle, onReset, plateZoneRef, plateAreaRef }) {
+export default function TablePanel({ tier, cart, settled, onSettle, onReset, plateZoneRef, plateAreaRef, monsterRef }) {
   const [open, setOpen] = useState(false);
   const entries = cartEntries(cart);
   const n = totalItems(cart);
@@ -33,6 +34,8 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
           <div className="plate-disc" />
         </div>
         {n === 0 && <div className="plate-empty">Your plate</div>}
+        {/* Eats whatever the bulldozer pushes off the plate once it fills up. */}
+        <div className="monster" ref={monsterRef} aria-hidden="true" dangerouslySetInnerHTML={{ __html: MONSTER_SVG }} />
       </div>
 
       {/* Once settled, the verdict says what the meter was saying, with a number. */}

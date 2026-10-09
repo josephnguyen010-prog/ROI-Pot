@@ -228,6 +228,7 @@
 .plate-zone {
   position: relative;
   flex-shrink: 0;
+  overflow: hidden; /* the dozer drives in from off the edge */
   height: 156px;
   margin: 12px 12px 0;
   border-radius: 10px;
@@ -238,11 +239,11 @@
 .plate-area { position: absolute; inset: 0; }
 .plate-disc {
   position: absolute;
-  left: 50%;
+  left: 41%;
   bottom: 16px;
   transform: translateX(-50%);
-  width: 82%;
-  max-width: 260px;
+  width: 70%;
+  max-width: 230px;
   height: 28px;
   border-radius: 50%;
   background: radial-gradient(ellipse 60% 65% at 50% 32%, #FFFFFF 0%, #FFFFFF 48%, #EFEAE0 72%, #D9D1C1 90%, #C6BCA9 100%);
@@ -260,7 +261,7 @@
 }
 .plate-empty {
   position: absolute;
-  inset: 0 0 48px;
+  inset: 0 18% 48px 0;
   display: grid;
   place-items: center;
   color: rgba(255, 255, 255, 0.4);
@@ -280,6 +281,58 @@
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
 }
 .plate-chip svg { width: 100%; height: 100%; overflow: visible; }
+
+/* ---------- the monster and the bulldozer ---------- */
+.monster {
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  width: 72px;
+  pointer-events: none;
+}
+.monster svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  transform-origin: 50% 100%;
+  animation: breathe 2.8s ease-in-out infinite;
+}
+.monster .mouth {
+  transform-box: fill-box;
+  transform-origin: 100% 20%;
+  transform: scaleY(0.22);
+  transition: transform 0.2s ease;
+}
+.monster .eyes {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: blink 5s infinite;
+}
+.monster.hungry .mouth { transform: scaleY(1); }
+.monster.chomp .mouth { animation: chomp 0.2s ease-in-out; }
+.monster.full svg { animation: gulp 0.6s ease-out; }
+@keyframes breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.02, 0.97); } }
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.1); } }
+@keyframes chomp { 0% { transform: scaleY(1); } 50% { transform: scaleY(0.15); } 100% { transform: scaleY(1); } }
+@keyframes gulp {
+  0% { transform: scale(1, 1); }
+  30% { transform: scale(1.14, 0.88); }
+  60% { transform: scale(0.94, 1.08); }
+  100% { transform: scale(1, 1); }
+}
+
+.dozer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  width: 60px;
+  will-change: transform;
+}
+.dozer svg { display: block; width: 100%; height: auto; overflow: visible; }
+.dozer.driving .dozer-body { animation: rumble 0.14s steps(2) infinite; }
+@keyframes rumble { 0% { transform: translateY(0); } 100% { transform: translateY(-0.8px); } }
 
 .meter { padding: 16px 18px 4px; }
 .meter-nums { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
@@ -448,7 +501,9 @@
   .table-head { display: none; }
   .plate-zone { height: 92px; margin-top: 10px; }
   .plate-disc { height: 22px; bottom: 10px; max-width: 220px; }
-  .plate-empty { inset: 0 0 32px; }
+  .plate-empty { inset: 0 18% 32px 0; }
+  .monster { width: 50px; right: 6px; bottom: 3px; }
+  .dozer { width: 44px; }
   .meter { padding: 10px 16px 0; }
   .eaten { font-size: 24px; }
   .bar { margin: 10px 0 6px; }
