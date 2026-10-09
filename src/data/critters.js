@@ -1,46 +1,45 @@
-// The two characters that keep the plate clear. Plain SVG strings like the
-// food art: the monster is rendered by React, the dozer is built by the physics
-// hook outside React, and both want the same markup.
+// The monster and the funnel, as plain SVG strings like the food art. The
+// bulldozer is an illustration, in assets/bulldozer.png.
 
-// Faces left, toward the plate. The mouth and eyes are their own groups so the
-// stylesheet can open, chomp and blink them.
-export const MONSTER_SVG = `<svg viewBox="0 0 80 78" xmlns="http://www.w3.org/2000/svg">
-  <path d="M29 15 L24 2 L38 11Z" fill="#E0AC5C"/>
-  <path d="M55 12 L61 0 L65 16Z" fill="#E0AC5C"/>
-  <ellipse cx="31" cy="74" rx="9" ry="4" fill="#9E3119"/>
-  <ellipse cx="58" cy="74" rx="9" ry="4" fill="#9E3119"/>
-  <path d="M12 46 C12 22 27 9 47 9 C66 9 77 25 77 45 C77 64 65 75 45 75 C25 75 12 66 12 46Z" fill="#D2492C"/>
-  <ellipse cx="53" cy="57" rx="16" ry="12" fill="#EE8462" opacity=".5"/>
-  <path d="M68 40 Q75 36 77 44" stroke="#9E3119" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <g class="eyes">
-    <circle cx="35" cy="29" r="8.5" fill="#fff"/>
-    <circle cx="53" cy="27" r="7" fill="#fff"/>
-    <circle cx="31.5" cy="30" r="3.8" fill="#1C1612"/>
-    <circle cx="50" cy="28" r="3.3" fill="#1C1612"/>
-    <circle cx="30.3" cy="28.6" r="1.2" fill="#fff"/>
-  </g>
-  <g class="mouth">
-    <path d="M6 43 Q25 36 44 44 Q41 63 23 63 Q9 59 6 43Z" fill="#3A1410"/>
-    <ellipse cx="23" cy="57" rx="9" ry="3.6" fill="#E2665A"/>
-    <polygon points="11,42 14,48.5 17,41 20,48.5 23,40.5 26,48.5 29,40.5 32,48 35,41.5 38,47 41,43.5" fill="#FFF7EE"/>
+// A round little mochi of a monster, facing out. It smiles while it waits; when
+// food is on the way the smile swaps for a wide-open mouth and its eyes look up
+// at the slide. The stylesheet drives all of that through the named groups.
+export const MONSTER_SVG = `<svg viewBox="0 0 80 74" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="40" cy="71" rx="25" ry="2.6" fill="#000" opacity=".16"/>
+  <g class="m-body">
+    <path d="M21 24 Q15 9 25.5 11.5 Q29 17 28.5 23Z" fill="#E8B04B"/>
+    <path d="M59 24 Q65 9 54.5 11.5 Q51 17 51.5 23Z" fill="#E8B04B"/>
+    <ellipse cx="9" cy="50" rx="4.2" ry="6.5" fill="#E25F49" transform="rotate(22 9 50)"/>
+    <ellipse cx="71" cy="50" rx="4.2" ry="6.5" fill="#E25F49" transform="rotate(-22 71 50)"/>
+    <path d="M7 53 C7 30 21 15 40 15 C59 15 73 30 73 53 C73 64 65 69 54 69 H26 C15 69 7 64 7 53Z" fill="#F07560"/>
+    <path d="M17 33 Q22 22 32 20" stroke="#fff" stroke-opacity=".5" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+    <ellipse cx="26" cy="69" rx="7.5" ry="3.2" fill="#D4553F"/>
+    <ellipse cx="54" cy="69" rx="7.5" ry="3.2" fill="#D4553F"/>
+    <ellipse cx="19.5" cy="45" rx="5.6" ry="3.4" fill="#FFA191"/>
+    <ellipse cx="60.5" cy="45" rx="5.6" ry="3.4" fill="#FFA191"/>
+    <g class="m-eyes">
+      <ellipse cx="29" cy="36" rx="5.2" ry="6.2" fill="#2A1A14"/>
+      <ellipse cx="51" cy="36" rx="5.2" ry="6.2" fill="#2A1A14"/>
+      <circle cx="30.9" cy="33.4" r="2" fill="#fff"/>
+      <circle cx="52.9" cy="33.4" r="2" fill="#fff"/>
+      <circle cx="27.6" cy="38.6" r="1" fill="#fff"/>
+      <circle cx="49.6" cy="38.6" r="1" fill="#fff"/>
+    </g>
+    <path class="m-smile" d="M35 46 Q40 50.5 45 46" stroke="#2A1A14" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <g class="m-mouth">
+      <ellipse cx="40" cy="50" rx="9.5" ry="8.5" fill="#5A1E16"/>
+      <ellipse cx="40" cy="55" rx="5.8" ry="3.1" fill="#FF8C7E"/>
+      <path d="M34.2 42.8 L35.9 46 L37.6 42.4Z M42.4 42.4 L44.1 46 L45.8 42.8Z" fill="#FFF8F0"/>
+    </g>
   </g>
 </svg>`;
 
-// Faces right, blade first.
-export const DOZER_SVG = `<svg viewBox="0 0 64 40" xmlns="http://www.w3.org/2000/svg">
-  <rect x="3" y="27" width="42" height="11" rx="5.5" fill="#2A221C"/>
-  <g fill="#6B5D50">
-    <circle cx="9.5" cy="32.5" r="3.4"/><circle cx="18.5" cy="32.5" r="3.4"/>
-    <circle cx="27.5" cy="32.5" r="3.4"/><circle cx="36.5" cy="32.5" r="3.4"/>
-  </g>
-  <g class="dozer-body">
-    <rect x="7" y="14" width="32" height="14" rx="2.5" fill="#E8A93A"/>
-    <path d="M11 14 V4 H27 L30.5 14Z" fill="#E8A93A"/>
-    <path d="M14 6.5 H25.6 L27.6 13 H14Z" fill="#CFE6EE"/>
-    <rect x="33" y="6" width="3" height="9" rx="1" fill="#2A221C"/>
-    <rect x="7" y="21" width="32" height="2.5" fill="#C98A24"/>
-  </g>
-  <rect x="38" y="19" width="13" height="3.6" fill="#6B5D50"/>
-  <path d="M50 7 Q57.5 22 50 38.5 H55.5 Q62 22 55.5 7Z" fill="#A7B0B5"/>
-  <path d="M50 7 Q57.5 22 50 38.5" stroke="#737C81" stroke-width="1.6" fill="none"/>
+// Brushed steel, wide at the top to catch whatever comes off the plate,
+// narrowing to the width of the slide.
+export const FUNNEL_SVG = `<svg viewBox="0 0 48 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M1 6 H47 L31 40 V60 H17 V40Z" fill="#B9C1C5"/>
+  <path d="M1 6 H47 L31 40 V60 H17 V40Z" fill="none" stroke="#7D868B" stroke-width="1.4"/>
+  <path d="M6 9 L20 39 V58" stroke="#fff" stroke-opacity=".55" stroke-width="2" fill="none"/>
+  <ellipse cx="24" cy="6" rx="23" ry="4.2" fill="#8D969B"/>
+  <ellipse cx="24" cy="6" rx="18" ry="2.6" fill="#3A3330"/>
 </svg>`;

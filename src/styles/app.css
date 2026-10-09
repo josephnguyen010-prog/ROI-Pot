@@ -282,12 +282,46 @@
 }
 .plate-chip svg { width: 100%; height: 100%; overflow: visible; }
 
-/* ---------- the monster and the bulldozer ---------- */
-.monster {
+/* ---------- the funnel, the slide and the monster ---------- */
+/* The right-hand strip of the panel is the slide's: content stops short of it.
+   Scoped to .table so it outranks the section rules further down. */
+.table .meter, .table .check { padding-right: 56px; }
+.table .verdict { margin-right: 56px; }
+
+.funnel {
   position: absolute;
-  right: 8px;
-  bottom: 6px;
-  width: 72px;
+  right: 10px;
+  bottom: 0;
+  width: 46px;
+  height: 66px;
+  pointer-events: none;
+}
+.funnel svg { display: block; width: 100%; height: 100%; }
+
+.slide {
+  position: absolute;
+  z-index: 1;
+  width: 15px;
+  margin-left: -7.5px;
+  border-radius: 0 0 8px 8px;
+  pointer-events: none;
+  border: 1.5px solid color-mix(in srgb, var(--ink) 24%, transparent);
+  border-top: 0;
+  /* A glass tube: a bright streak down one side, rings every so often. */
+  background:
+    repeating-linear-gradient(180deg, transparent 0 34px, color-mix(in srgb, var(--ink) 16%, transparent) 34px 36px),
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--ink) 8%, transparent),
+      color-mix(in srgb, #fff 70%, transparent) 30%,
+      color-mix(in srgb, var(--ink) 4%, transparent) 60%,
+      color-mix(in srgb, var(--ink) 12%, transparent));
+}
+
+.actions { align-items: flex-end; }
+.monster {
+  flex: 0 0 auto;
+  width: 60px;
+  margin: 0 -4px -6px 2px;
   pointer-events: none;
 }
 .monster svg {
@@ -295,29 +329,37 @@
   width: 100%;
   height: auto;
   overflow: visible;
-  transform-origin: 50% 100%;
-  animation: breathe 2.8s ease-in-out infinite;
 }
-.monster .mouth {
+.monster .m-body {
   transform-box: fill-box;
-  transform-origin: 100% 20%;
-  transform: scaleY(0.22);
-  transition: transform 0.2s ease;
+  transform-origin: 50% 100%;
+  animation: breathe 3s ease-in-out infinite;
 }
-.monster .eyes {
+.monster .m-eyes {
   transform-box: fill-box;
   transform-origin: 50% 50%;
   animation: blink 5s infinite;
+  transition: translate 0.25s ease;
 }
-.monster.hungry .mouth { transform: scaleY(1); }
-.monster.chomp .mouth { animation: chomp 0.2s ease-in-out; }
-.monster.full svg { animation: gulp 0.6s ease-out; }
-@keyframes breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.02, 0.97); } }
+.monster .m-mouth {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.15s ease, transform 0.2s ease;
+}
+.monster .m-smile { transition: opacity 0.15s ease; }
+.monster.hungry .m-mouth { opacity: 1; transform: scale(1); }
+.monster.hungry .m-smile { opacity: 0; }
+.monster.hungry .m-eyes { translate: 1.5px -2px; }
+.monster.chomp .m-mouth { animation: chomp 0.2s ease-in-out; }
+.monster.full .m-body { animation: gulp 0.6s ease-out; }
+@keyframes breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.03, 0.96); } }
 @keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.1); } }
-@keyframes chomp { 0% { transform: scaleY(1); } 50% { transform: scaleY(0.15); } 100% { transform: scaleY(1); } }
+@keyframes chomp { 0% { transform: scaleY(1); } 50% { transform: scaleY(0.25); } 100% { transform: scaleY(1); } }
 @keyframes gulp {
   0% { transform: scale(1, 1); }
-  30% { transform: scale(1.14, 0.88); }
+  30% { transform: scale(1.16, 0.86); }
   60% { transform: scale(0.94, 1.08); }
   100% { transform: scale(1, 1); }
 }
@@ -327,11 +369,12 @@
   left: 0;
   top: 0;
   z-index: 2;
-  width: 60px;
+  width: 68px;
+  aspect-ratio: 264 / 134; /* the image's own, so the box is right before it loads */
   will-change: transform;
 }
-.dozer svg { display: block; width: 100%; height: auto; overflow: visible; }
-.dozer.driving .dozer-body { animation: rumble 0.14s steps(2) infinite; }
+.dozer img { display: block; width: 100%; height: 100%; user-select: none; }
+.dozer.driving img { animation: rumble 0.14s steps(2) infinite; }
 @keyframes rumble { 0% { transform: translateY(0); } 100% { transform: translateY(-0.8px); } }
 
 .meter { padding: 16px 18px 4px; }
@@ -502,14 +545,16 @@
   .plate-zone { height: 92px; margin-top: 10px; }
   .plate-disc { height: 22px; bottom: 10px; max-width: 220px; }
   .plate-empty { inset: 0 18% 32px 0; }
-  .monster { width: 50px; right: 6px; bottom: 3px; }
-  .dozer { width: 44px; }
+  .funnel { width: 36px; height: 44px; right: 12px; }
+  .dozer { width: 50px; }
   .meter { padding: 10px 16px 0; }
   .eaten { font-size: 24px; }
   .bar { margin: 10px 0 6px; }
   .check, .verdict { display: none; }
   .table.open .check { display: block; max-height: 38vh; }
   .table.open .verdict { display: block; }
-  .actions { padding: 10px 16px 14px; }
+  .actions { gap: 8px; padding: 10px 12px 14px 16px; }
+  .btn { padding: 11px 8px; font-size: 14px; white-space: nowrap; }
+  .monster { width: 46px; }
   .only-narrow { display: block; }
 }

@@ -1,14 +1,44 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { TIERS } from '../data/menu';
 import { artFor, VIEW_BOX } from '../data/foodArt';
-import { MONSTER_SVG } from '../data/critters';
+import { MONSTER_SVG, FUNNEL_SVG } from '../data/critters';
 import { fmt, cartEntries, totalItems, totalValue, verdictFor } from '../utils/cart';
 
 // The plate, the break-even meter and the running check. On a wide screen it
 // sits beside the menu; on a narrow one it is a sheet along the bottom, and
 // the check opens out of it.
-export default function TablePanel({ tier, cart, settled, onSettle, onReset, plateZoneRef, plateAreaRef, monsterRef }) {
+export default function TablePanel({ tier, cart, settled, onSettle, onReset, plateZoneRef, plateAreaRef, monsterRef, funnelRef }) {
   const [open, setOpen] = useState(false);
+  const panelRef = useRef(null);
+  const slideRef = useRef(null);
+
+  // The slide runs from the bottom of the funnel to just above the monster,
+  // whatever sits between them, so it is measured rather than laid out.
+  useLayoutEffect(() => {
+    const panel = panelRef.current;
+    const slide = slideRef.current;
+    if (!panel || !slide) return undefined;
+    function fit() {
+      const f = funnelRef.current;
+      const m = monsterRef.current;
+      if (!f || !m) return;
+      const p = panel.getBoundingClientRect();
+      const fr = f.getBoundingClientRect();
+      const mr = m.getBoundingClientRect();
+      const top = fr.bottom - p.top - 2;
+      slide.style.left = `${fr.left + fr.width / 2 - p.left}px`;
+      slide.style.top = `${top}px`;
+      slide.style.height = `${Math.max(0, mr.top - p.top + mr.height * 0.14 - top)}px`;
+    }
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(panel);
+    window.addEventListener('resize', fit);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', fit);
+    };
+  }, [funnelRef, monsterRef]);
   const entries = cartEntries(cart);
   const n = totalItems(cart);
   const eaten = totalValue(cart);
@@ -23,7 +53,7 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
   const over = Math.max(0, eaten - paid);
 
   return (
-    <aside className={`table${open ? ' open' : ''}`} aria-label="Your table">
+    <aside className={`table${open ? ' open' : ''}`} aria-label="Your table" ref={panelRef}>
       <div className="table-head">
         <h2>Your table</h2>
         <span>{n} plate{n === 1 ? '' : 's'}</span>
@@ -34,8 +64,7 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
           <div className="plate-disc" />
         </div>
         {n === 0 && <div className="plate-empty">Your plate</div>}
-        {/* Eats whatever the bulldozer pushes off the plate once it fills up. */}
-        <div className="monster" ref={monsterRef} aria-hidden="true" dangerouslySetInnerHTML={{ __html: MONSTER_SVG }} />
+        <div className="funnel" ref={funnelRef} aria-hidden="true" dangerouslySetInnerHTML={{ __html: FUNNEL_SVG }} />
       </div>
 
       {/* Once settled, the verdict says what the meter was saying, with a number. */}
@@ -91,6 +120,8 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
           ))}
       </div>
 
+      <div className="slide" ref={slideRef} aria-hidden="true" />
+
       <div className="actions">
         <button
           type="button"
@@ -114,6 +145,8 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
             Settle the check
           </button>
         )}
+        {/* Eats whatever the bulldozer pushes off the plate once it fills up. */}
+        <div className="monster" ref={monsterRef} aria-hidden="true" dangerouslySetInnerHTML={{ __html: MONSTER_SVG }} />
       </div>
     </aside>
   );

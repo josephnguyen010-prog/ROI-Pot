@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { artSvg } from '../data/foodArt';
-import { DOZER_SVG } from '../data/critters';
+import dozerUrl from '../assets/bulldozer.png';
+import { ensureFX } from '../utils/fx';
 
 const CHIP_RADIUS = 17;
 const GRAVITY = 1600;     // px/s^2
@@ -25,13 +26,15 @@ const SLEEP_TIME = 0.1;   // s slower than that, in contact, before a chip joins
 const MAX_AGE = 4;        // s — a chip settles eventually no matter what it is doing
 
 // When the plate fills up, a bulldozer drives across it and shoves the lot off
-// the far edge into the monster waiting beside the plate.
+// the far edge into a funnel. From there each piece rides a slide down the side
+// of the panel into the monster sitting by the checkout button.
 const FULL = 14;          // chips on the plate before the dozer is sent in: about two layers
 const DOZER_SPEED = 150;  // px/s across the plate
 const LOAD_ROWS = 3;      // the heap in front of the blade is this many chips tall
 const GRAB = 16;          // per second: how quickly a chip catches up to its place on the blade
-const FLIGHT = 0.34;      // s from the plate edge into the monster's mouth
-const FLIGHT_GAP = 0.045; // s between chips going in, so it reads as a stream of bites
+const FLIGHT_GAP = 0.06;  // s between chips going down, so it reads as a stream of bites
+const SLIDE_SPEED = 720;  // px/s down the slide at the bottom, accelerating from rest
+const SPIN = 420;         // deg/s a piece tumbles while it is in the air or the slide
 
 const REDUCED = typeof window !== 'undefined'
   && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -50,6 +53,7 @@ export function usePlatePhysics() {
   const rafRef = useRef(null);
   const geomRef = useRef(null);
   const monsterRef = useRef(null);
+  const funnelRef = useRef(null);
   const sweepRef = useRef(null); // { el, w, h, x, phase, load, flying }
 
   // The plate is drawn in CSS, so measure the disc rather than restating its size
@@ -299,15 +303,50 @@ export function usePlatePhysics() {
     m.classList.add('chomp');
   }
 
-  // Where food goes in, in plate-area coordinates. The monster faces left, so
-  // its mouth is on the near side of its body.
-  function mouthAt() {
+  // The way down, in window coordinates: the funnel's mouth, its throat, the
+  // bottom of the slide, and the monster's mouth. Measured every frame, so the
+  // food follows the panel if the page scrolls or the sheet opens mid-meal.
+  function route() {
+    const f = funnelRef.current;
     const m = monsterRef.current;
-    const area = plateAreaRef.current;
-    if (!m || !area) return null;
-    const r = m.getBoundingClientRect();
-    const a = area.getBoundingClientRect();
-    return { x: r.left - a.left + r.width * 0.26, y: r.top - a.top + r.height * 0.66 };
+    if (!f || !m) return null;
+    const fr = f.getBoundingClientRect();
+    const mr = m.getBoundingClientRect();
+    const x = fr.left + fr.width / 2;
+    return {
+      funnel: { x, y: fr.top + fr.height * 0.18 },
+      throat: { x, y: fr.bottom },
+      end: { x, y: mr.top + mr.height * 0.12 },
+      mouth: { x: mr.left + mr.width * 0.5, y: mr.top + mr.height * 0.66 },
+    };
+  }
+
+  // Advance one piece along the route. Each leg is a straight line with an
+  // optional hop; the slide leg starts slow and picks up speed. Returns true
+  // once the piece is in the monster.
+  function ride(c, r, dt) {
+    const f = c.fly;
+    const slide = Math.max(0, r.end.y - r.throat.y);
+    const legs = [
+      { d: 0.22, a: { x: f.x0, y: f.y0 }, b: r.funnel, s0: 1, s1: 0.72, hop: 24 },
+      { d: 0.1, a: r.funnel, b: r.throat, s0: 0.72, s1: 0.5, hop: 0 },
+      { d: Math.max(0.2, Math.sqrt((2 * slide) / SLIDE_SPEED)), a: r.throat, b: r.end, s0: 0.5, s1: 0.5, hop: 0, accel: true },
+      { d: 0.2, a: r.end, b: r.mouth, s0: 0.5, s1: 0.34, hop: 14 },
+    ];
+    let t = f.t;
+    for (const leg of legs) {
+      if (t <= leg.d) {
+        const q = t / leg.d;
+        const p = leg.accel ? q * q : q;
+        c.x = leg.a.x + (leg.b.x - leg.a.x) * p;
+        c.y = leg.a.y + (leg.b.y - leg.a.y) * p - Math.sin(Math.PI * p) * leg.hop;
+        c.scale = leg.s0 + (leg.s1 - leg.s0) * p;
+        c.rot += SPIN * dt;
+        return false;
+      }
+      t -= leg.d;
+    }
+    return true;
   }
 
   function startSweep(g) {
@@ -326,10 +365,10 @@ export function usePlatePhysics() {
 
     const el = document.createElement('div');
     el.className = 'dozer driving';
-    el.innerHTML = DOZER_SVG;
+    el.innerHTML = `<img src="${dozerUrl}" alt="" draggable="false">`;
     area.appendChild(el);
     const w = el.offsetWidth;
-    const h = el.offsetHeight;
+    const h = el.offsetHeight; // the box carries the image's aspect ratio, so this is right before it loads
     sweepRef.current = {
       el, w, h,
       x: g.cx - g.rx - w - 6, // just off the near rim, blade first
@@ -379,6 +418,12 @@ export function usePlatePhysics() {
         const c = s.load[i];
         if (atRim || c.x - c.r * 0.3 > edge) {
           s.load.splice(i, 1);
+          // Off the plate it has to cross the rest of the panel, so it moves to
+          // the page-wide effects layer and switches to window coordinates.
+          const a = plateAreaRef.current.getBoundingClientRect();
+          c.x += a.left;
+          c.y += a.top;
+          ensureFX().appendChild(c.el);
           c.fly = { x0: c.x, y0: c.y, t: -FLIGHT_GAP * s.flying.length };
           s.flying.push(c);
         }
@@ -386,18 +431,14 @@ export function usePlatePhysics() {
       if (atRim && s.load.length === 0) s.phase = 'feed';
     }
 
-    const mouth = mouthAt();
+    const r = route();
     for (let i = s.flying.length - 1; i >= 0; i--) {
       const c = s.flying[i];
       c.fly.t += dt;
       if (c.fly.t < 0) continue;
-      const p = Math.min(1, c.fly.t / FLIGHT);
-      const to = mouth || { x: c.fly.x0 + 40, y: c.fly.y0 + 20 };
-      c.x = c.fly.x0 + (to.x - c.fly.x0) * p;
-      c.y = c.fly.y0 + (to.y - c.fly.y0) * p - Math.sin(Math.PI * p) * 20;
-      c.scale = 1 - 0.6 * p;
+      const done = !r || ride(c, r, dt);
       draw(c);
-      if (p >= 1) {
+      if (done) {
         c.el.remove();
         s.flying.splice(i, 1);
         chomp();
@@ -518,5 +559,5 @@ export function usePlatePhysics() {
     };
   }, []);
 
-  return { plateAreaRef, monsterRef, spawnFallingChip, clearPlate };
+  return { plateAreaRef, monsterRef, funnelRef, spawnFallingChip, clearPlate };
 }
