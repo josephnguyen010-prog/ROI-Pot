@@ -7,6 +7,8 @@ on who won the meal — you or the house.
 Tap a plate to add it, or press and hold to drag it across. Food falls and piles up on a small
 hand-rolled physics simulation. Close out the check to see your retail value vs. what you paid.
 
+**[Try it live →](https://josephnguyen010-prog.github.io/Joseph-Nguyen-Portfolio/roi-pot/)**
+
 Not affiliated with any restaurant chain. Item names, calorie counts and the spicy / gluten-free /
 dinner-only marks are transcribed from a real KPOT menu board; **every price in here is an estimate
 I assigned**, since the board carries calories rather than prices. The AYCE tier prices are invented
@@ -32,7 +34,8 @@ src/
 
 ```
 npm install
-npm run dev
+npm run dev      # http://localhost:5173
+npm run lint     # oxlint
 ```
 
 ## Build
@@ -40,3 +43,6 @@ npm run dev
 ```
 npm run build
 ```
+
+`vite.config.js` sets `base: './'`, so the build in `dist/` runs from any sub-path. That is how
+it is hosted inside the portfolio: copy `dist/` over `public/roi-pot/` there.
