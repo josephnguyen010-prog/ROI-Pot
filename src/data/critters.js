@@ -1,35 +1,37 @@
 // The monster and the funnel, as plain SVG strings like the food art. The
 // bulldozer is an illustration, in assets/bulldozer.png.
 
-// A round little mochi of a monster, facing out. It smiles while it waits; when
-// food is on the way the smile swaps for a wide-open mouth and its eyes look up
-// at the slide. The stylesheet drives all of that through the named groups.
-export const MONSTER_SVG = `<svg viewBox="0 0 80 74" xmlns="http://www.w3.org/2000/svg">
-  <ellipse cx="40" cy="71" rx="25" ry="2.6" fill="#000" opacity=".16"/>
+// A round little mochi of a monster with its mouth on top of its head, so the
+// slide can feed straight into it. Closed, the mouth is a smile across the top;
+// when food is coming it opens round the end of the slide and the eyes turn up
+// to watch it arrive. The stylesheet drives that through the named groups.
+export const MONSTER_SVG = `<svg viewBox="0 0 80 78" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="40" cy="75" rx="25" ry="2.6" fill="#000" opacity=".16"/>
   <g class="m-body">
-    <path d="M21 24 Q15 9 25.5 11.5 Q29 17 28.5 23Z" fill="#E8B04B"/>
-    <path d="M59 24 Q65 9 54.5 11.5 Q51 17 51.5 23Z" fill="#E8B04B"/>
-    <ellipse cx="9" cy="50" rx="4.2" ry="6.5" fill="#E25F49" transform="rotate(22 9 50)"/>
-    <ellipse cx="71" cy="50" rx="4.2" ry="6.5" fill="#E25F49" transform="rotate(-22 71 50)"/>
-    <path d="M7 53 C7 30 21 15 40 15 C59 15 73 30 73 53 C73 64 65 69 54 69 H26 C15 69 7 64 7 53Z" fill="#F07560"/>
-    <path d="M17 33 Q22 22 32 20" stroke="#fff" stroke-opacity=".5" stroke-width="3.2" stroke-linecap="round" fill="none"/>
-    <ellipse cx="26" cy="69" rx="7.5" ry="3.2" fill="#D4553F"/>
-    <ellipse cx="54" cy="69" rx="7.5" ry="3.2" fill="#D4553F"/>
-    <ellipse cx="19.5" cy="45" rx="5.6" ry="3.4" fill="#FFA191"/>
-    <ellipse cx="60.5" cy="45" rx="5.6" ry="3.4" fill="#FFA191"/>
+    <path d="M10 33 Q1 20 13 21 Q16 26 15.5 33Z" fill="#E8B04B"/>
+    <path d="M70 33 Q79 20 67 21 Q64 26 64.5 33Z" fill="#E8B04B"/>
+    <ellipse cx="9" cy="55" rx="4.2" ry="6.5" fill="#E25F49" transform="rotate(22 9 55)"/>
+    <ellipse cx="71" cy="55" rx="4.2" ry="6.5" fill="#E25F49" transform="rotate(-22 71 55)"/>
+    <path d="M7 57 C7 35 20 18 40 18 C60 18 73 35 73 57 C73 68 65 73 54 73 H26 C15 73 7 68 7 57Z" fill="#F07560"/>
+    <path d="M15 42 Q18 33 25 29" stroke="#fff" stroke-opacity=".45" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <ellipse cx="26" cy="73" rx="7.5" ry="3.2" fill="#D4553F"/>
+    <ellipse cx="54" cy="73" rx="7.5" ry="3.2" fill="#D4553F"/>
+    <ellipse cx="19.5" cy="51" rx="5.6" ry="3.4" fill="#FFA191"/>
+    <ellipse cx="60.5" cy="51" rx="5.6" ry="3.4" fill="#FFA191"/>
     <g class="m-eyes">
-      <ellipse cx="29" cy="36" rx="5.2" ry="6.2" fill="#2A1A14"/>
-      <ellipse cx="51" cy="36" rx="5.2" ry="6.2" fill="#2A1A14"/>
-      <circle cx="30.9" cy="33.4" r="2" fill="#fff"/>
-      <circle cx="52.9" cy="33.4" r="2" fill="#fff"/>
-      <circle cx="27.6" cy="38.6" r="1" fill="#fff"/>
-      <circle cx="49.6" cy="38.6" r="1" fill="#fff"/>
+      <ellipse cx="30" cy="42" rx="5.2" ry="6.2" fill="#2A1A14"/>
+      <ellipse cx="50" cy="42" rx="5.2" ry="6.2" fill="#2A1A14"/>
+      <circle cx="31.6" cy="38.8" r="2" fill="#fff"/>
+      <circle cx="51.6" cy="38.8" r="2" fill="#fff"/>
+      <circle cx="28.6" cy="44.6" r="1" fill="#fff"/>
+      <circle cx="48.6" cy="44.6" r="1" fill="#fff"/>
     </g>
-    <path class="m-smile" d="M35 46 Q40 50.5 45 46" stroke="#2A1A14" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <path class="m-smile" d="M27 22 Q40 27 53 22" stroke="#B9452F" stroke-width="2.4" fill="none" stroke-linecap="round"/>
     <g class="m-mouth">
-      <ellipse cx="40" cy="50" rx="9.5" ry="8.5" fill="#5A1E16"/>
-      <ellipse cx="40" cy="55" rx="5.8" ry="3.1" fill="#FF8C7E"/>
-      <path d="M34.2 42.8 L35.9 46 L37.6 42.4Z M42.4 42.4 L44.1 46 L45.8 42.8Z" fill="#FFF8F0"/>
+      <ellipse cx="40" cy="21.5" rx="17" ry="7.2" fill="#C24A36"/>
+      <ellipse cx="40" cy="22.2" rx="14" ry="5.3" fill="#4A1712"/>
+      <ellipse cx="40" cy="24.4" rx="7" ry="2.2" fill="#FF8C7E"/>
+      <path d="M29.5 18.6 L31.2 21.8 L32.9 18.2Z M47.1 18.2 L48.8 21.8 L50.5 18.6Z" fill="#FFF8F0"/>
     </g>
   </g>
 </svg>`;
