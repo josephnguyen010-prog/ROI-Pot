@@ -219,8 +219,10 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  /* Held to the window, so the button stays in reach; the check scrolls. */
-  max-height: calc(100vh - 40px);
+  /* One fixed height, held to the window: the check scrolls inside it rather
+     than growing the panel, so the button, the monster and the slide down to
+     it stay put however much is ordered. */
+  height: min(660px, calc(100vh - 40px));
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -497,8 +499,7 @@
   padding: 10px 18px 4px;
   border-top: 1px dashed var(--line);
   flex: 1 1 auto;
-  min-height: 60px;
-  max-height: 30vh;
+  min-height: 0;
   overflow-y: auto;
 }
 .line {
@@ -543,7 +544,7 @@
 .tone-even { --tone: var(--even); }
 .tone-loss { --tone: var(--red); }
 
-.actions { display: flex; gap: 10px; padding: 14px 18px 18px; }
+.actions { display: flex; gap: 10px; padding: 14px 18px 18px; margin-top: auto; }
 .btn {
   flex: 1;
   appearance: none;
@@ -620,6 +621,7 @@
     padding-right: 0;
   }
   .table {
+    height: auto;
     max-height: 86vh;
     border-radius: 16px 16px 0 0;
     border-bottom: 0;
@@ -635,7 +637,8 @@
   .eaten { font-size: 24px; }
   .bar { margin: 10px 0 6px; }
   .check, .verdict { display: none; }
-  .table.open .check { display: block; max-height: 38vh; padding-right: 64px; }
+  /* A fixed height here too, so opening the check is one size whatever is in it. */
+  .table.open .check { display: block; flex: none; height: 38vh; padding-right: 64px; }
   .table.open .verdict { display: block; }
   .actions { gap: 8px; padding: 10px 66px 14px 16px; }
   .btn { padding: 11px 8px; font-size: 14px; white-space: nowrap; }

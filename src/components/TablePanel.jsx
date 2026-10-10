@@ -15,9 +15,9 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
   const panelRef = useRef(null);
   const slideRef = useRef(null);
 
-  // The belt runs level with the plate, from just inside its rim to just past
-  // the funnel's centre; the funnel's rim sits a little below the belt, so food
-  // drops off the end into it; the slide runs from the funnel down to just
+  // The belt runs level with the plate, from just inside its rim to just short
+  // of the funnel; the funnel's rim sits a little below the belt, so food
+  // falls off the end into it; the slide runs from the funnel down to just
   // above the monster. All of it depends on where the plate ends up, so it is
   // measured, not laid out.
   useLayoutEffect(() => {
@@ -44,7 +44,9 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
         const left = d.right - w.left - 14;
         belt.style.left = `${left}px`;
         belt.style.top = `${surface - w.top + 2}px`;
-        belt.style.width = `${fr.left + fr.width / 2 - w.left + 10 - left}px`;
+        // It stops short of the funnel's rim, so food comes off the end
+        // roller and falls in, rather than the belt running over the mouth.
+        belt.style.width = `${fr.left - w.left - 4 - left}px`;
       }
       const mr = m.getBoundingClientRect();
       const top = fr.bottom - w.top - 2;

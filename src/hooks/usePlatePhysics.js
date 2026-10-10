@@ -323,7 +323,7 @@ export function usePlatePhysics() {
       // roller over the funnel. A piece rides with its centre a radius above it.
       beltTop: br.top,
       beltStart: br.left + 10,
-      beltEnd: br.right - 8,
+      beltEnd: br.right - 4,
       funnel: { x, y: fr.top + fr.height * 0.12 }, // just inside the rim
       throat: { x, y: fr.bottom },
       end: { x, y: mr.top + mr.height * 0.12 },
