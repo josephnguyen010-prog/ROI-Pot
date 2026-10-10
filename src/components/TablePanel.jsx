@@ -8,15 +8,17 @@ import { fmt, cartEntries, totalItems, totalValue, verdictFor } from '../utils/c
 // sits beside the menu, with the funnel, slide and monster hanging in a lane
 // off its right-hand side; on a narrow one it is a sheet along the bottom, the
 // check opens out of it, and the three tuck inside.
-export default function TablePanel({ tier, cart, settled, onSettle, onReset, plateZoneRef, plateAreaRef, monsterRef, funnelRef }) {
+export default function TablePanel({ tier, cart, settled, onSettle, onReset, plateZoneRef, plateAreaRef, monsterRef, funnelRef, beltRef }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const panelRef = useRef(null);
   const slideRef = useRef(null);
 
-  // The funnel's rim sits just below the plate, so food drops into it, and the
-  // slide runs from the funnel down to just above the monster. Both depend on
-  // how tall everything in the panel is, so they are measured, not laid out.
+  // The belt runs level with the plate, from just inside its rim to just past
+  // the funnel's centre; the funnel's rim sits a little below the belt, so food
+  // drops off the end into it; the slide runs from the funnel down to just
+  // above the monster. All of it depends on where the plate ends up, so it is
+  // measured, not laid out.
   useLayoutEffect(() => {
     const wrap = wrapRef.current;
     const slide = slideRef.current;
@@ -32,9 +34,17 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
       const disc = z.querySelector('.plate-disc');
       if (!disc) return;
       const d = disc.getBoundingClientRect();
-      const rim = d.top + d.height * 0.78 + 14;
+      const surface = d.top + d.height * 0.78;
+      const rim = surface + 16;
       f.style.top = `${rim - w.top - f.offsetHeight * 0.1}px`;
       const fr = f.getBoundingClientRect();
+      const belt = beltRef.current;
+      if (belt) {
+        const left = d.right - w.left - 14;
+        belt.style.left = `${left}px`;
+        belt.style.top = `${surface - w.top + 2}px`;
+        belt.style.width = `${fr.left + fr.width / 2 - w.left + 10 - left}px`;
+      }
       const mr = m.getBoundingClientRect();
       const top = fr.bottom - w.top - 2;
       slide.style.left = `${fr.left + fr.width / 2 - w.left}px`;
@@ -50,7 +60,7 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
       ro.disconnect();
       window.removeEventListener('resize', fit);
     };
-  }, [funnelRef, monsterRef, plateZoneRef]);
+  }, [funnelRef, monsterRef, plateZoneRef, beltRef]);
   const entries = cartEntries(cart);
   const n = totalItems(cart);
   const eaten = totalValue(cart);
@@ -157,6 +167,7 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
 
       {/* Once the plate fills up the bulldozer shoves it into the funnel, and the
           food rides the slide down to the monster. */}
+      <div className="belt" ref={beltRef} aria-hidden="true"><i /><i /></div>
       <div className="funnel" ref={funnelRef} aria-hidden="true" dangerouslySetInnerHTML={{ __html: FUNNEL_SVG }} />
       <div className="slide" ref={slideRef} aria-hidden="true" />
       <div className="monster" ref={monsterRef} aria-hidden="true" dangerouslySetInnerHTML={{ __html: MONSTER_SVG }} />

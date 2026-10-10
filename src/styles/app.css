@@ -289,6 +289,43 @@
 .plate-chip svg { width: 100%; height: 100%; overflow: visible; }
 
 /* ---------- the funnel, the slide and the monster ---------- */
+/* The conveyor from the plate's rim, out over the panel's edge, to the funnel.
+   Its treads only move while a sweep is on. */
+.belt {
+  position: absolute;
+  z-index: 3;
+  height: 9px;
+  pointer-events: none;
+  border-radius: 5px;
+  border: 1.5px solid #2B2F33;
+  background: repeating-linear-gradient(90deg, #565D63 0 7px, #3E4449 7px 11px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+.belt.running { animation: belt-run 0.065s linear infinite; }
+@keyframes belt-run { to { background-position: 11px 0; } }
+/* The rollers at either end, turning with the belt. */
+.belt i {
+  position: absolute;
+  top: 50%;
+  width: 13px;
+  height: 13px;
+  margin-top: -6.5px;
+  border-radius: 50%;
+  /* A hub and one spoke, so the turning shows. */
+  background:
+    radial-gradient(circle, #2B2F33 0 2px, transparent 2.5px),
+    linear-gradient(90deg, transparent 44%, #7D868B 44% 56%, transparent 56%),
+    #B9C1C5;
+  border: 1.5px solid #7D868B;
+}
+.belt i:first-child { left: -5px; }
+.belt i:last-child { right: -5px; }
+.belt.running i { animation: roll 0.4s linear infinite; }
+@keyframes roll { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .belt.running, .belt.running i { animation: none; }
+}
+
 .funnel {
   position: absolute;
   z-index: 2;

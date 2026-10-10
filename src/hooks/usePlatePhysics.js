@@ -26,15 +26,17 @@ const SLEEP_TIME = 0.1;   // s slower than that, in contact, before a chip joins
 const MAX_AGE = 4;        // s — a chip settles eventually no matter what it is doing
 
 // When the plate fills up, a bulldozer drives across it and shoves the lot off
-// the far edge into a funnel. From there each piece rides a slide down the side
-// of the panel into the monster sitting by the checkout button.
+// the far edge onto a conveyor belt, which carries each piece out of the panel
+// and drops it into a funnel. From there it rides a slide down the side of the
+// panel into the monster sitting by the checkout button.
 const FULL = 14;          // chips on the plate before the dozer is sent in: about two layers
 const DOZER_SPEED = 150;  // px/s across the plate
 const LOAD_ROWS = 3;      // the heap in front of the blade is this many chips tall
 const GRAB = 16;          // per second: how quickly a chip catches up to its place on the blade
-const FLIGHT_GAP = 0.06;  // s between chips going down, so it reads as a stream of bites
+const FLIGHT_GAP = 0.12;  // s between pieces stepping onto the belt, so they ride it spaced out
+const BELT_SPEED = 170;   // px/s along the conveyor
 const SLIDE_SPEED = 720;  // px/s down the slide at the bottom, accelerating from rest
-const SPIN = 420;         // deg/s a piece tumbles while it is in the air or the slide
+const SPIN = 420;         // deg/s a piece tumbles while it falls or slides; on the belt it sits still
 
 const REDUCED = typeof window !== 'undefined'
   && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -54,6 +56,7 @@ export function usePlatePhysics() {
   const geomRef = useRef(null);
   const monsterRef = useRef(null);
   const funnelRef = useRef(null);
+  const beltRef = useRef(null);
   const sweepRef = useRef(null); // { el, w, h, x, phase, load, flying }
 
   // The plate is drawn in CSS, so measure the disc rather than restating its size
@@ -309,11 +312,18 @@ export function usePlatePhysics() {
   function route() {
     const f = funnelRef.current;
     const m = monsterRef.current;
-    if (!f || !m) return null;
+    const b = beltRef.current;
+    if (!f || !m || !b) return null;
     const fr = f.getBoundingClientRect();
     const mr = m.getBoundingClientRect();
+    const br = b.getBoundingClientRect();
     const x = fr.left + fr.width / 2;
     return {
+      // The belt's top surface, from just past the plate's rim to the end
+      // roller over the funnel. A piece rides with its centre a radius above it.
+      beltTop: br.top,
+      beltStart: br.left + 10,
+      beltEnd: br.right - 8,
       funnel: { x, y: fr.top + fr.height * 0.12 }, // just inside the rim
       throat: { x, y: fr.bottom },
       end: { x, y: mr.top + mr.height * 0.12 },
@@ -327,12 +337,19 @@ export function usePlatePhysics() {
   function ride(c, r, dt) {
     const f = c.fly;
     const slide = Math.max(0, r.end.y - r.throat.y);
+    const onBelt = r.beltTop - c.r * 0.8;
+    const boarded = { x: Math.max(f.x0, r.beltStart), y: onBelt };
+    const offEnd = { x: r.beltEnd, y: onBelt };
     const legs = [
-      // Off the edge and down: the rim sits below the plate, so this is a drop.
-      { d: 0.26, a: { x: f.x0, y: f.y0 }, b: r.funnel, s0: 1, s1: 0.72, hop: 6, fall: true },
-      { d: 0.1, a: r.funnel, b: r.throat, s0: 0.72, s1: 0.5, hop: 0 },
-      { d: Math.max(0.2, Math.sqrt((2 * slide) / SLIDE_SPEED)), a: r.throat, b: r.end, s0: 0.5, s1: 0.5, hop: 0, accel: true },
-      { d: 0.2, a: r.end, b: r.mouth, s0: 0.5, s1: 0.34, hop: 14 },
+      // Off the plate's edge, down onto the belt just below it.
+      { d: 0.14, a: { x: f.x0, y: f.y0 }, b: boarded, s0: 1, s1: 1, hop: 0, fall: true, spin: true },
+      // Carried at belt speed, sitting still on the moving surface.
+      { d: Math.max(0.05, (offEnd.x - boarded.x) / BELT_SPEED), a: boarded, b: offEnd, s0: 1, s1: 1, hop: 0 },
+      // Off the end roller and down into the funnel's mouth.
+      { d: 0.2, a: offEnd, b: r.funnel, s0: 1, s1: 0.72, hop: 0, fall: true, spin: true },
+      { d: 0.1, a: r.funnel, b: r.throat, s0: 0.72, s1: 0.5, hop: 0, spin: true },
+      { d: Math.max(0.2, Math.sqrt((2 * slide) / SLIDE_SPEED)), a: r.throat, b: r.end, s0: 0.5, s1: 0.5, hop: 0, accel: true, spin: true },
+      { d: 0.2, a: r.end, b: r.mouth, s0: 0.5, s1: 0.34, hop: 14, spin: true },
     ];
     let t = f.t;
     for (const leg of legs) {
@@ -344,7 +361,7 @@ export function usePlatePhysics() {
         c.x = leg.a.x + (leg.b.x - leg.a.x) * p;
         c.y = leg.a.y + (leg.b.y - leg.a.y) * py - Math.sin(Math.PI * p) * leg.hop;
         c.scale = leg.s0 + (leg.s1 - leg.s0) * p;
-        c.rot += SPIN * dt;
+        if (leg.spin) c.rot += SPIN * dt;
         return false;
       }
       t -= leg.d;
@@ -380,6 +397,7 @@ export function usePlatePhysics() {
       flying: [],
     };
     monster('hungry');
+    beltRef.current?.classList.add('running');
     startLoop();
   }
 
@@ -455,6 +473,7 @@ export function usePlatePhysics() {
     if (s.phase === 'feed' && s.flying.length === 0) {
       s.phase = 'back';
       monster('hungry', false);
+      beltRef.current?.classList.remove('running');
       monster('full');
       setTimeout(() => monster('full', false), 700);
     }
@@ -547,6 +566,7 @@ export function usePlatePhysics() {
       s.el.remove();
       sweepRef.current = null;
       monster('hungry', false);
+      beltRef.current?.classList.remove('running');
     }
   }
 
@@ -566,5 +586,5 @@ export function usePlatePhysics() {
     };
   }, []);
 
-  return { plateAreaRef, monsterRef, funnelRef, spawnFallingChip, clearPlate };
+  return { plateAreaRef, monsterRef, funnelRef, beltRef, spawnFallingChip, clearPlate };
 }
