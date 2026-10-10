@@ -424,6 +424,10 @@ export function usePlatePhysics() {
           c.x += a.left;
           c.y += a.top;
           ensureFX().appendChild(c.el);
+          // Redraw now: a piece queued behind others is not drawn again until
+          // its turn, and its old plate-relative transform would put it near
+          // the top-left of the window in the meantime.
+          draw(c);
           c.fly = { x0: c.x, y0: c.y, t: -FLIGHT_GAP * s.flying.length };
           s.flying.push(c);
         }
