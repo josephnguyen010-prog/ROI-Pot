@@ -330,10 +330,9 @@ export function usePlatePhysics() {
       beltEnd: br.right - 4,
       funnel: { x, y: fr.top + fr.height * 0.12 }, // just inside the rim
       throat: { x, y: fr.bottom },
-      // The slide's end sits in the mouth on top of the head; past it, a piece
-      // drops the last little way into the throat.
-      end: { x, y: mr.top + mr.height * 0.22 },
-      mouth: { x: mr.left + mr.width * 0.5, y: mr.top + mr.height * 0.29 },
+      // Down the pipe to the elbow, level with the mouth, then sideways in.
+      end: { x, y: mr.top + mr.height * 0.68 },
+      mouth: { x: mr.left + mr.width * 0.82, y: mr.top + mr.height * 0.68 },
     };
   }
 
@@ -355,7 +354,7 @@ export function usePlatePhysics() {
       { d: 0.2, a: offEnd, b: r.funnel, s0: 1, s1: 0.72, hop: 0, fall: true, spin: true },
       { d: 0.1, a: r.funnel, b: r.throat, s0: 0.72, s1: 0.5, hop: 0, spin: true },
       { d: Math.max(0.2, Math.sqrt((2 * slide) / SLIDE_SPEED)), a: r.throat, b: r.end, s0: 0.5, s1: 0.5, hop: 0, accel: true, spin: true },
-      { d: 0.08, a: r.end, b: r.mouth, s0: 0.5, s1: 0.3, hop: 0, fall: true, spin: true },
+      { d: Math.max(0.08, (r.end.x - r.mouth.x) / 420), a: r.end, b: r.mouth, s0: 0.5, s1: 0.4, hop: 0, spin: true },
     ];
     let t = f.t;
     for (const leg of legs) {

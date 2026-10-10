@@ -71,7 +71,7 @@
 .layout {
   display: grid;
   /* The table's column carries the slide's lane as well as the panel. */
-  grid-template-columns: minmax(0, 1fr) 418px;
+  grid-template-columns: minmax(0, 1fr) 466px;
   gap: 36px;
   margin-top: 22px;
   align-items: start;
@@ -213,7 +213,7 @@
 .table-wrap {
   position: sticky;
   top: 20px;
-  padding-right: 58px;
+  padding-right: 106px; /* the lane: belt's end, funnel, pipe, monster */
 }
 .table {
   position: relative;
@@ -375,33 +375,31 @@
 }
 .funnel svg { display: block; width: 100%; height: 100%; }
 
+/* The pipe, drawn as one stroked path (its shape is set from the layout in
+   TablePanel): a wall, the glass inside it, rings along it, and a bright
+   streak down the near side. Stroke widths match PIPE there. */
 .slide {
   position: absolute;
   z-index: 1;
-  width: 15px;
-  margin-left: -7.5px;
-  border-radius: 0 0 8px 8px;
+  overflow: visible;
   pointer-events: none;
-  border: 1.5px solid color-mix(in srgb, var(--ink) 24%, transparent);
-  border-top: 0;
-  /* A glass tube: a bright streak down one side, rings every so often. */
-  background:
-    repeating-linear-gradient(180deg, transparent 0 34px, color-mix(in srgb, var(--ink) 16%, transparent) 34px 36px),
-    linear-gradient(90deg,
-      color-mix(in srgb, var(--ink) 8%, transparent),
-      color-mix(in srgb, #fff 70%, transparent) 30%,
-      color-mix(in srgb, var(--ink) 4%, transparent) 60%,
-      color-mix(in srgb, var(--ink) 12%, transparent));
+  fill: none;
 }
+.slide path { stroke-linecap: butt; stroke-linejoin: round; }
+.slide .pipe-wall { stroke: color-mix(in srgb, var(--ink) 26%, transparent); stroke-width: 13px; }
+.slide .pipe-glass { stroke: color-mix(in srgb, var(--surface) 82%, var(--ink)); stroke-width: 10px; }
+.slide .pipe-rings { stroke: color-mix(in srgb, var(--ink) 18%, transparent); stroke-width: 10px; stroke-dasharray: 2 34; }
+.slide .pipe-shine { stroke: color-mix(in srgb, #fff 65%, transparent); stroke-width: 2px; transform: translate(-2.5px, -2.5px); }
 
-/* Right under the slide, which runs into the mouth on top of its head. It sits
-   above the slide, so the slide's end disappears behind the front lip. */
+/* Left of the pipe's foot, level with the checkout button; the pipe bends and
+   runs into its mouth from the side. It sits above the pipe, so the pipe's
+   end disappears behind its lips. */
 .monster {
   position: absolute;
   z-index: 2;
-  right: -3px; /* centred on the slide */
-  bottom: 14px; /* level with the checkout button */
-  width: 60px;
+  right: 41px;
+  bottom: 14px;
+  width: 64px;
   pointer-events: none;
 }
 .monster svg {
@@ -421,19 +419,18 @@
   animation: blink 5s infinite;
   transition: translate 0.25s ease;
 }
-/* Closed it is a smile across the top of the head; open, a mouth round the
-   end of the slide. */
+/* Idle, lips pursed round the pipe; when food is coming, a mouth open round it. */
 .monster .m-mouth {
   transform-box: fill-box;
-  transform-origin: 50% 50%;
+  transform-origin: 70% 50%;
   opacity: 0;
-  transform: scale(0.5, 0.2);
+  transform: scale(0.6);
   transition: opacity 0.15s ease, transform 0.2s ease;
 }
-.monster .m-smile { transition: opacity 0.15s ease; }
+.monster .m-lips { transition: opacity 0.15s ease; }
 .monster.hungry .m-mouth { opacity: 1; transform: none; }
-.monster.hungry .m-smile { opacity: 0; }
-.monster.hungry .m-eyes { translate: 0 -1.5px; } /* watching the slide */
+.monster.hungry .m-lips { opacity: 0; }
+.monster.hungry .m-eyes { translate: 2px 0; } /* eyeing the pipe */
 /* Each piece that drops in: a swallow that squashes the whole body a little. */
 .monster.chomp .m-mouth { animation: chomp 0.22s ease-in-out; }
 .monster.chomp .m-body { animation: swallow 0.22s ease-in-out; }
@@ -647,9 +644,9 @@
   /* A fixed height here too, so opening the check is one size whatever is in it. */
   .table.open .check { display: block; flex: none; height: 38vh; padding-right: 64px; }
   .table.open .verdict { display: block; }
-  .actions { gap: 8px; padding: 10px 66px 14px 16px; }
+  .actions { gap: 8px; padding: 10px 96px 14px 16px; }
   .btn { padding: 11px 8px; font-size: 14px; white-space: nowrap; }
-  .monster { width: 46px; right: 9px; bottom: calc(14px + env(safe-area-inset-bottom)); }
+  .monster { width: 48px; right: 43px; bottom: calc(14px + env(safe-area-inset-bottom)); }
   .only-narrow { display: block; }
   .check-head.only-narrow { display: flex; }
 }
