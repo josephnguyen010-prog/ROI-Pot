@@ -1,10 +1,9 @@
-// The monster, the funnel and the bowl, as plain SVG strings like the food
-// art. The bulldozer is an illustration, in assets/bulldozer.png.
+// The monster and the funnel, as plain SVG strings like the food art. The
+// bulldozer is an illustration, in assets/bulldozer.png.
 
 // A round little mochi of a monster, facing out. It smiles while it waits; when
-// food is on the way the smile swaps for an open mouth and its eyes turn to the
-// bowl, and when the bowl is full it leans over and eats the lot in one bite.
-// The stylesheet drives all of that through the named groups.
+// food is on the way the smile swaps for a wide-open mouth and its eyes look up
+// at the slide. The stylesheet drives all of that through the named groups.
 export const MONSTER_SVG = `<svg viewBox="0 0 80 74" xmlns="http://www.w3.org/2000/svg">
   <ellipse cx="40" cy="71" rx="25" ry="2.6" fill="#000" opacity=".16"/>
   <g class="m-body">
@@ -43,17 +42,4 @@ export const FUNNEL_SVG = `<svg viewBox="0 0 48 60" preserveAspectRatio="none" x
   <path d="M6 9 L20 39 V58" stroke="#fff" stroke-opacity=".55" stroke-width="2" fill="none"/>
   <ellipse cx="24" cy="6" rx="23" ry="4.2" fill="#8D969B"/>
   <ellipse cx="24" cy="6" rx="18" ry="2.6" fill="#3A3330"/>
-</svg>`;
-
-// A big pet bowl, seen a little from above: the food lands on the pale glaze
-// inside the rim and heaps up there until the monster eats it. Pale, because
-// most of what lands in it is red-brown meat.
-export const BOWL_SVG = `<svg viewBox="0 0 64 34" xmlns="http://www.w3.org/2000/svg">
-  <ellipse cx="32" cy="31" rx="27" ry="2.6" fill="#000" opacity=".2"/>
-  <path d="M3 9 L9 28 Q10 31 14 31 H50 Q54 31 55 28 L61 9Z" fill="#C2361B"/>
-  <path d="M6 18 H58 L56.4 23 H7.6Z" fill="#E8B04B"/>
-  <path d="M9 11 L13 27" stroke="#fff" stroke-opacity=".35" stroke-width="2" stroke-linecap="round"/>
-  <ellipse cx="32" cy="9" rx="29.5" ry="6.5" fill="#E0573C"/>
-  <ellipse cx="32" cy="9.4" rx="25" ry="4.6" fill="#F3E6D6"/>
-  <ellipse cx="32" cy="10.4" rx="20" ry="3" fill="#E2D0BB"/>
 </svg>`;
