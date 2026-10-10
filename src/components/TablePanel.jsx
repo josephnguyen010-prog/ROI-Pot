@@ -76,7 +76,6 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
           <div className="plate-area" ref={plateAreaRef}>
             <div className="plate-disc" />
           </div>
-          {n === 0 && <div className="plate-empty">Your plate</div>}
         </div>
 
         {/* Once settled, the verdict says what the meter was saying, with a number. */}
@@ -114,10 +113,8 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
           </div>
         )}
 
-        <div className="check">
-          {entries.length === 0
-            ? <p className="check-empty">Nothing ordered yet.</p>
-            : entries.map((i) => (
+        {entries.length > 0 && <div className="check">
+          {entries.map((i) => (
               <div className="line" key={i.id}>
                 <svg
                   viewBox={VIEW_BOX}
@@ -130,7 +127,7 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
                 <span className="amt">{fmt(i.value * i.qty)}</span>
               </div>
             ))}
-        </div>
+        </div>}
 
         <div className="actions">
           <button

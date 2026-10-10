@@ -5,7 +5,7 @@
   --surface: #FFFDF9;
   --ink: #1C1612;
   --ink-2: #5E5248;
-  --ink-3: #8C7F73;
+  --ink-3: #74675C; /* 4.6:1 on paper: it carries small text */
   --line: rgba(28, 22, 18, 0.13);
   --slate: #221C18;
   --red: #C2361B;
@@ -24,7 +24,7 @@
     --surface: #1F1915;
     --ink: #F2EBE1;
     --ink-2: #B5A898;
-    --ink-3: #85786B;
+    --ink-3: #998C7F;
     --line: rgba(242, 235, 225, 0.12);
     --slate: #2A221C;
     --red: #EE6646;
@@ -38,7 +38,7 @@
   --surface: #1F1915;
   --ink: #F2EBE1;
   --ink-2: #B5A898;
-  --ink-3: #85786B;
+  --ink-3: #998C7F;
   --line: rgba(242, 235, 225, 0.12);
   --slate: #2A221C;
   --red: #EE6646;

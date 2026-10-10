@@ -31,9 +31,16 @@
   line-height: 1.45;
 }
 
+.tier-picker { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+.tier-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
 .tiers {
   display: inline-flex;
-  flex-shrink: 0;
   border: 1.5px solid var(--ink);
   border-radius: 8px;
   overflow: hidden;
@@ -71,13 +78,12 @@
 }
 
 .footnote {
-  margin: 40px 0 0;
-  padding-top: 16px;
+  margin: 48px 0 0;
+  padding: 16px 40% 0 0;
   border-top: 1px solid var(--line);
   color: var(--ink-3);
   font-size: 12.5px;
   line-height: 1.5;
-  max-width: 80ch;
 }
 
 /* ---------- menu ---------- */
@@ -85,7 +91,10 @@
 
 .tabs {
   display: flex;
-  gap: 24px;
+  gap: 18px;
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+  padding-right: 28px;
   overflow-x: auto;
   scrollbar-width: none;
   border-bottom: 1px solid var(--line);
@@ -101,7 +110,7 @@
   padding: 12px 0 10px;
   font: inherit;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--ink-3);
   white-space: nowrap;
   cursor: pointer;
@@ -167,8 +176,9 @@
 .mark-dinner { color: var(--even); font-weight: 600; }
 
 .dish.off .dish-add { cursor: not-allowed; }
-.dish.off .dish-art,
-.dish.off .dish-name { opacity: 0.4; }
+.dish.off .food-art { filter: grayscale(1) brightness(0.8); opacity: 0.35; }
+.dish.off .dish-name,
+.dish.off .dish-price { color: var(--ink-3); }
 .dish.off .dish-add:hover .dish-art { transform: none; box-shadow: none; }
 
 /* The count doubles as the way to take one back: it reads as a number until
@@ -265,17 +275,6 @@
   height: 10px;
   background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.5), transparent 72%);
   filter: blur(2px);
-}
-.plate-empty {
-  position: absolute;
-  inset: 0 0 48px;
-  display: grid;
-  place-items: center;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  pointer-events: none;
 }
 /* Width and height are set in JS from the sim's chip radius. */
 .plate-chip {
@@ -428,7 +427,6 @@
   max-height: 30vh;
   overflow-y: auto;
 }
-.check-empty { margin: 4px 0 8px; color: var(--ink-3); font-size: 13px; }
 .line {
   display: grid;
   grid-template-columns: 30px 28px 1fr auto;
@@ -485,7 +483,12 @@
   font-size: 15px;
   cursor: pointer;
 }
-.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn:disabled {
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  border-color: transparent;
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
 .btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .btn.ghost { background: transparent; color: var(--ink); border-color: var(--ink); }
 .only-narrow { display: none; }
@@ -527,6 +530,7 @@
   .wordmark { font-size: 38px; }
   .tagline { font-size: 14px; }
   .tier { flex: 1; }
+  .tiers { display: flex; }
   /* minmax(0, …) or the tab strip's width props the column open past the screen. */
   .layout { grid-template-columns: minmax(0, 1fr); margin-top: 14px; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 18px 12px; }
@@ -551,14 +555,13 @@
   .table-head { display: none; }
   .plate-zone { height: 92px; margin-top: 10px; }
   .plate-disc { left: 41%; width: 70%; height: 22px; bottom: 10px; max-width: 220px; }
-  .plate-empty { inset: 0 18% 32px 0; }
-  .funnel { width: 36px; height: 44px; right: 14px; }
+    .funnel { width: 36px; height: 44px; right: 14px; }
   .dozer { width: 50px; }
   .meter { padding: 10px 64px 0 16px; } /* clear of the slide */
   .eaten { font-size: 24px; }
   .bar { margin: 10px 0 6px; }
   .check, .verdict { display: none; }
-  .table.open .check { display: block; max-height: 38vh; }
+  .table.open .check { display: block; max-height: 38vh; padding-right: 64px; }
   .table.open .verdict { display: block; }
   .actions { gap: 8px; padding: 10px 66px 14px 16px; }
   .btn { padding: 11px 8px; font-size: 14px; white-space: nowrap; }
