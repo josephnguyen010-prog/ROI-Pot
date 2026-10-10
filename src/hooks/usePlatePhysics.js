@@ -314,7 +314,7 @@ export function usePlatePhysics() {
     const mr = m.getBoundingClientRect();
     const x = fr.left + fr.width / 2;
     return {
-      funnel: { x, y: fr.top + fr.height * 0.18 },
+      funnel: { x, y: fr.top + fr.height * 0.12 }, // just inside the rim
       throat: { x, y: fr.bottom },
       end: { x, y: mr.top + mr.height * 0.12 },
       mouth: { x: mr.left + mr.width * 0.5, y: mr.top + mr.height * 0.66 },
@@ -328,7 +328,8 @@ export function usePlatePhysics() {
     const f = c.fly;
     const slide = Math.max(0, r.end.y - r.throat.y);
     const legs = [
-      { d: 0.22, a: { x: f.x0, y: f.y0 }, b: r.funnel, s0: 1, s1: 0.72, hop: 24 },
+      // Off the edge and down: the rim sits below the plate, so this is a drop.
+      { d: 0.26, a: { x: f.x0, y: f.y0 }, b: r.funnel, s0: 1, s1: 0.72, hop: 6, fall: true },
       { d: 0.1, a: r.funnel, b: r.throat, s0: 0.72, s1: 0.5, hop: 0 },
       { d: Math.max(0.2, Math.sqrt((2 * slide) / SLIDE_SPEED)), a: r.throat, b: r.end, s0: 0.5, s1: 0.5, hop: 0, accel: true },
       { d: 0.2, a: r.end, b: r.mouth, s0: 0.5, s1: 0.34, hop: 14 },
@@ -338,8 +339,10 @@ export function usePlatePhysics() {
       if (t <= leg.d) {
         const q = t / leg.d;
         const p = leg.accel ? q * q : q;
+        // A fall keeps its sideways speed but gathers speed downward.
+        const py = leg.fall ? q * q : p;
         c.x = leg.a.x + (leg.b.x - leg.a.x) * p;
-        c.y = leg.a.y + (leg.b.y - leg.a.y) * p - Math.sin(Math.PI * p) * leg.hop;
+        c.y = leg.a.y + (leg.b.y - leg.a.y) * py - Math.sin(Math.PI * p) * leg.hop;
         c.scale = leg.s0 + (leg.s1 - leg.s0) * p;
         c.rot += SPIN * dt;
         return false;

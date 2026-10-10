@@ -14,9 +14,9 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
   const panelRef = useRef(null);
   const slideRef = useRef(null);
 
-  // The funnel's rim sits level with the bottom of the plate, and the slide
-  // runs from the funnel down to just above the monster. Both depend on how
-  // tall everything in the panel is, so they are measured rather than laid out.
+  // The funnel's rim sits just below the plate, so food drops into it, and the
+  // slide runs from the funnel down to just above the monster. Both depend on
+  // how tall everything in the panel is, so they are measured, not laid out.
   useLayoutEffect(() => {
     const wrap = wrapRef.current;
     const slide = slideRef.current;
@@ -27,8 +27,13 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
       const z = plateZoneRef.current;
       if (!f || !m || !z) return;
       const w = wrap.getBoundingClientRect();
-      const zr = z.getBoundingClientRect();
-      f.style.top = `${zr.bottom - w.top - f.offsetHeight}px`;
+      // The rim is drawn 10% of the way down the funnel; put it a little below
+      // the plate surface food rests on (78% of the way down the disc).
+      const disc = z.querySelector('.plate-disc');
+      if (!disc) return;
+      const d = disc.getBoundingClientRect();
+      const rim = d.top + d.height * 0.78 + 14;
+      f.style.top = `${rim - w.top - f.offsetHeight * 0.1}px`;
       const fr = f.getBoundingClientRect();
       const mr = m.getBoundingClientRect();
       const top = fr.bottom - w.top - 2;
