@@ -25,7 +25,7 @@ export default function App() {
   const [settled, setSettled] = useState(false);
 
   const plateZoneRef = useRef(null);
-  const { plateAreaRef, monsterRef, funnelRef, beltRef, spawnFallingChip, clearPlate } = usePlatePhysics();
+  const { plateAreaRef, monsterRef, funnelRef, beltRef, bowlRef, spawnFallingChip, clearPlate } = usePlatePhysics();
 
   useEffect(() => {
     try { localStorage.setItem('roipot-tier', tier); } catch { /* private mode */ }
@@ -106,6 +106,7 @@ export default function App() {
           monsterRef={monsterRef}
           funnelRef={funnelRef}
           beltRef={beltRef}
+          bowlRef={bowlRef}
         />
       </div>
 

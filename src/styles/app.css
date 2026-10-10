@@ -71,7 +71,7 @@
 .layout {
   display: grid;
   /* The table's column carries the slide's lane as well as the panel. */
-  grid-template-columns: minmax(0, 1fr) 418px;
+  grid-template-columns: minmax(0, 1fr) 464px;
   gap: 36px;
   margin-top: 22px;
   align-items: start;
@@ -213,7 +213,7 @@
 .table-wrap {
   position: sticky;
   top: 20px;
-  padding-right: 58px;
+  padding-right: 104px; /* the lane: funnel and slide, the bowl, the monster */
 }
 .table {
   position: relative;
@@ -394,12 +394,24 @@
       color-mix(in srgb, var(--ink) 12%, transparent));
 }
 
-.monster {
+/* At the foot of the slide, level with the checkout button. */
+.bowl {
   position: absolute;
   z-index: 2;
   right: -2px;
-  bottom: 14px; /* level with the checkout button */
-  width: 60px;
+  bottom: 16px;
+  width: 58px;
+  pointer-events: none;
+}
+.bowl svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+/* Beside the bowl, between it and the panel. */
+.monster {
+  position: absolute;
+  z-index: 2;
+  right: 50px;
+  bottom: 12px;
+  width: 54px;
   pointer-events: none;
 }
 .monster svg {
@@ -429,7 +441,25 @@
 .monster .m-smile { transition: opacity 0.15s ease; }
 .monster.hungry .m-mouth { opacity: 1; transform: scale(1); }
 .monster.hungry .m-smile { opacity: 0; }
-.monster.hungry .m-eyes { translate: 1.5px -2px; }
+.monster.hungry .m-eyes { translate: 2.5px 0.5px; } /* watching the bowl */
+
+/* The bite: lean over the bowl, jaws wide, snap shut, sit back up. The bowl
+   empties at the moment the jaws close (BITE_AT in the physics hook). */
+.monster.bite .m-body { animation: lunge 0.8s cubic-bezier(0.3, 0, 0.3, 1); }
+.monster.bite .m-mouth { opacity: 1; animation: gnash 0.8s ease-in-out; }
+.monster.bite .m-smile { opacity: 0; }
+@keyframes lunge {
+  0% { transform: none; }
+  32% { transform: translate(26%, 14%) rotate(16deg) scale(1.08); }
+  50% { transform: translate(24%, 14%) rotate(14deg) scale(1.04); }
+  100% { transform: none; }
+}
+@keyframes gnash {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.45); }
+  44% { transform: scale(1.3, 0.2); }
+  100% { transform: scale(1); }
+}
 .monster.chomp .m-mouth { animation: chomp 0.2s ease-in-out; }
 .monster.full .m-body { animation: gulp 0.6s ease-out; }
 @keyframes breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.03, 0.96); } }
@@ -640,9 +670,10 @@
   /* A fixed height here too, so opening the check is one size whatever is in it. */
   .table.open .check { display: block; flex: none; height: 38vh; padding-right: 64px; }
   .table.open .verdict { display: block; }
-  .actions { gap: 8px; padding: 10px 66px 14px 16px; }
+  .actions { gap: 8px; padding: 10px 100px 14px 16px; }
   .btn { padding: 11px 8px; font-size: 14px; white-space: nowrap; }
-  .monster { width: 46px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); }
+  .bowl { width: 46px; right: 9px; bottom: calc(16px + env(safe-area-inset-bottom)); }
+  .monster { width: 42px; right: 52px; bottom: calc(12px + env(safe-area-inset-bottom)); }
   .only-narrow { display: block; }
   .check-head.only-narrow { display: flex; }
 }

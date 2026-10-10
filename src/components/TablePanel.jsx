@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { TIERS } from '../data/menu';
 import { artFor, VIEW_BOX } from '../data/foodArt';
-import { MONSTER_SVG, FUNNEL_SVG } from '../data/critters';
+import { MONSTER_SVG, FUNNEL_SVG, BOWL_SVG } from '../data/critters';
 import ClearButton from './ClearButton';
 import { fmt, cartEntries, totalItems, totalValue, verdictFor } from '../utils/cart';
 
@@ -9,7 +9,7 @@ import { fmt, cartEntries, totalItems, totalValue, verdictFor } from '../utils/c
 // sits beside the menu, with the funnel, slide and monster hanging in a lane
 // off its right-hand side; on a narrow one it is a sheet along the bottom, the
 // check opens out of it, and the three tuck inside.
-export default function TablePanel({ tier, cart, settled, onSettle, onReset, plateZoneRef, plateAreaRef, monsterRef, funnelRef, beltRef }) {
+export default function TablePanel({ tier, cart, settled, onSettle, onReset, plateZoneRef, plateAreaRef, monsterRef, funnelRef, beltRef, bowlRef }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const panelRef = useRef(null);
@@ -18,7 +18,7 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
   // The belt runs level with the plate, from just inside its rim to just short
   // of the funnel; the funnel's rim sits a little below the belt, so food
   // falls off the end into it; the slide runs from the funnel down to just
-  // above the monster. All of it depends on where the plate ends up, so it is
+  // over the bowl. All of it depends on where the plate ends up, so it is
   // measured, not laid out.
   useLayoutEffect(() => {
     const wrap = wrapRef.current;
@@ -26,9 +26,9 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
     if (!wrap || !slide) return undefined;
     function fit() {
       const f = funnelRef.current;
-      const m = monsterRef.current;
+      const bowl = bowlRef.current;
       const z = plateZoneRef.current;
-      if (!f || !m || !z) return;
+      if (!f || !bowl || !z) return;
       const w = wrap.getBoundingClientRect();
       // The rim is drawn 10% of the way down the funnel; put it a little below
       // the plate surface food rests on (78% of the way down the disc).
@@ -48,11 +48,11 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
         // roller and falls in, rather than the belt running over the mouth.
         belt.style.width = `${fr.left - w.left - 4 - left}px`;
       }
-      const mr = m.getBoundingClientRect();
+      const br = bowl.getBoundingClientRect();
       const top = fr.bottom - w.top - 2;
       slide.style.left = `${fr.left + fr.width / 2 - w.left}px`;
       slide.style.top = `${top}px`;
-      slide.style.height = `${Math.max(0, mr.top - w.top + mr.height * 0.14 - top)}px`;
+      slide.style.height = `${Math.max(0, br.top - w.top - 2 - top)}px`;
     }
     fit();
     const ro = new ResizeObserver(fit);
@@ -63,7 +63,7 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
       ro.disconnect();
       window.removeEventListener('resize', fit);
     };
-  }, [funnelRef, monsterRef, plateZoneRef, beltRef]);
+  }, [funnelRef, bowlRef, plateZoneRef, beltRef]);
   const entries = cartEntries(cart);
   const n = totalItems(cart);
   const eaten = totalValue(cart);
@@ -177,11 +177,13 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
         </div>
       </aside>
 
-      {/* Once the plate fills up the bulldozer shoves it into the funnel, and the
-          food rides the slide down to the monster. */}
+      {/* Once the plate fills up the bulldozer shoves it onto the belt, the
+          belt drops it into the funnel, the slide fills the bowl, and the
+          monster eats the bowl. */}
       <div className="belt" ref={beltRef} aria-hidden="true"><i /><i /></div>
       <div className="funnel" ref={funnelRef} aria-hidden="true" dangerouslySetInnerHTML={{ __html: FUNNEL_SVG }} />
       <div className="slide" ref={slideRef} aria-hidden="true" />
+      <div className="bowl" ref={bowlRef} aria-hidden="true" dangerouslySetInnerHTML={{ __html: BOWL_SVG }} />
       <div className="monster" ref={monsterRef} aria-hidden="true" dangerouslySetInnerHTML={{ __html: MONSTER_SVG }} />
     </div>
   );

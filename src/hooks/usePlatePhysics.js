@@ -28,7 +28,8 @@ const MAX_AGE = 4;        // s — a chip settles eventually no matter what it i
 // When the plate fills up, a bulldozer drives across it and shoves the lot off
 // the far edge onto a conveyor belt, which carries each piece out of the panel
 // and drops it into a funnel. From there it rides a slide down the side of the
-// panel into the monster sitting by the checkout button.
+// panel into a bowl, and once everything is in, the monster beside the bowl
+// eats the lot in one bite.
 const FULL = 14;          // chips on the plate before the dozer is sent in: about two layers
 const DOZER_SPEED = 150;  // px/s across the plate
 const LOAD_ROWS = 3;      // the heap in front of the blade is this many chips tall
@@ -36,6 +37,8 @@ const GRAB = 16;          // per second: how quickly a chip catches up to its pl
 const FLIGHT_GAP = 0.12;  // s between pieces stepping onto the belt, so they ride it spaced out
 const BELT_SPEED = 170;   // px/s along the conveyor
 const SLIDE_SPEED = 720;  // px/s down the slide at the bottom, accelerating from rest
+const BITE_AT = 0.34;     // s into the bite when the bowl empties: the jaws closing
+const BITE_LEN = 0.8;     // s for the whole lean in, bite and sit back
 const SPIN = 420;         // deg/s a piece tumbles while it falls or slides; on the belt it sits still
 
 const REDUCED = typeof window !== 'undefined'
@@ -57,6 +60,7 @@ export function usePlatePhysics() {
   const monsterRef = useRef(null);
   const funnelRef = useRef(null);
   const beltRef = useRef(null);
+  const bowlRef = useRef(null);
   const sweepRef = useRef(null); // { el, w, h, x, phase, load, flying }
 
   // The plate is drawn in CSS, so measure the disc rather than restating its size
@@ -311,12 +315,12 @@ export function usePlatePhysics() {
   // food follows the panel if the page scrolls or the sheet opens mid-meal.
   function route() {
     const f = funnelRef.current;
-    const m = monsterRef.current;
     const b = beltRef.current;
-    if (!f || !m || !b) return null;
+    const w = bowlRef.current;
+    if (!f || !b || !w) return null;
     const fr = f.getBoundingClientRect();
-    const mr = m.getBoundingClientRect();
     const br = b.getBoundingClientRect();
+    const wr = w.getBoundingClientRect();
     const x = fr.left + fr.width / 2;
     return {
       // The belt's top surface, from just past the plate's rim to the end
@@ -326,14 +330,22 @@ export function usePlatePhysics() {
       beltEnd: br.right - 4,
       funnel: { x, y: fr.top + fr.height * 0.12 }, // just inside the rim
       throat: { x, y: fr.bottom },
-      end: { x, y: mr.top + mr.height * 0.12 },
-      mouth: { x: mr.left + mr.width * 0.5, y: mr.top + mr.height * 0.66 },
+      end: { x, y: wr.top - 2 }, // the slide's mouth, just over the bowl
+      bowl: { left: wr.left, top: wr.top, width: wr.width, height: wr.height },
     };
   }
 
   // Advance one piece along the route. Each leg is a straight line with an
   // optional hop; the slide leg starts slow and picks up speed. Returns true
   // once the piece is in the monster.
+  // A piece's resting place in the bowl, in window coordinates.
+  function inBowl(c, r) {
+    return {
+      x: r.bowl.left + r.bowl.width * c.spot.fx,
+      y: r.bowl.top + r.bowl.height * 0.3 - c.spot.lift,
+    };
+  }
+
   function ride(c, r, dt) {
     const f = c.fly;
     const slide = Math.max(0, r.end.y - r.throat.y);
@@ -349,7 +361,8 @@ export function usePlatePhysics() {
       { d: 0.2, a: offEnd, b: r.funnel, s0: 1, s1: 0.72, hop: 0, fall: true, spin: true },
       { d: 0.1, a: r.funnel, b: r.throat, s0: 0.72, s1: 0.5, hop: 0, spin: true },
       { d: Math.max(0.2, Math.sqrt((2 * slide) / SLIDE_SPEED)), a: r.throat, b: r.end, s0: 0.5, s1: 0.5, hop: 0, accel: true, spin: true },
-      { d: 0.2, a: r.end, b: r.mouth, s0: 0.5, s1: 0.34, hop: 14, spin: true },
+      // Out of the slide and down into the bowl.
+      { d: 0.16, a: r.end, b: inBowl(c, r), s0: 0.5, s1: 0.5, hop: 0, fall: true, spin: true },
     ];
     let t = f.t;
     for (const leg of legs) {
@@ -395,6 +408,8 @@ export function usePlatePhysics() {
       phase: 'push',
       load: [],
       flying: [],
+      bowl: [], // pieces that have landed and wait to be eaten
+      bite: 0,
     };
     monster('hungry');
     beltRef.current?.classList.add('running');
@@ -450,6 +465,10 @@ export function usePlatePhysics() {
           // the top-left of the window in the meantime.
           draw(c);
           c.fly = { x0: c.x, y0: c.y, t: -FLIGHT_GAP * s.flying.length };
+          // Spread across the bowl's opening, each one a little higher than
+          // the last, so the bowl visibly fills.
+          const n = s.flying.length + s.bowl.length;
+          c.spot = { fx: 0.24 + Math.random() * 0.52, lift: Math.min(n, 30) * 0.7 };
           s.flying.push(c);
         }
       }
@@ -464,18 +483,44 @@ export function usePlatePhysics() {
       const done = !r || ride(c, r, dt);
       draw(c);
       if (done) {
-        c.el.remove();
         s.flying.splice(i, 1);
-        chomp();
+        s.bowl.push(c);
       }
     }
 
+    // The bowl's contents follow it, in case the page scrolls or the sheet
+    // opens while they wait.
+    if (r) {
+      for (const c of s.bowl) {
+        const at = inBowl(c, r);
+        c.x = at.x;
+        c.y = at.y;
+        draw(c);
+      }
+    }
+
+    // Everything is in the bowl: one giant bite.
     if (s.phase === 'feed' && s.flying.length === 0) {
-      s.phase = 'back';
-      monster('hungry', false);
+      s.phase = 'bite';
+      s.bite = 0;
       beltRef.current?.classList.remove('running');
-      monster('full');
-      setTimeout(() => monster('full', false), 700);
+      monster('bite');
+    }
+    if (s.phase === 'bite') {
+      const before = s.bite;
+      s.bite += dt;
+      if (before < BITE_AT && s.bite >= BITE_AT) {
+        for (const c of s.bowl) c.el.remove();
+        s.bowl = [];
+        chomp();
+      }
+      if (s.bite >= BITE_LEN) {
+        s.phase = 'back';
+        monster('bite', false);
+        monster('hungry', false);
+        monster('full');
+        setTimeout(() => monster('full', false), 700);
+      }
     }
     if (s.phase === 'back') {
       s.x -= DOZER_SPEED * 1.5 * dt;
@@ -486,7 +531,7 @@ export function usePlatePhysics() {
       }
     }
 
-    s.el.classList.toggle('driving', s.phase !== 'feed');
+    s.el.classList.toggle('driving', s.phase === 'push' || s.phase === 'back');
     s.el.style.transform = `translate(${s.x}px, ${g.base - s.h + 3}px)`;
   }
 
@@ -562,7 +607,8 @@ export function usePlatePhysics() {
     activeRef.current = [];
     const s = sweepRef.current;
     if (s) {
-      for (const c of s.load.concat(s.flying)) c.el.remove();
+      for (const c of s.load.concat(s.flying, s.bowl)) c.el.remove();
+      monster('bite', false);
       s.el.remove();
       sweepRef.current = null;
       monster('hungry', false);
@@ -586,5 +632,5 @@ export function usePlatePhysics() {
     };
   }, []);
 
-  return { plateAreaRef, monsterRef, funnelRef, beltRef, spawnFallingChip, clearPlate };
+  return { plateAreaRef, monsterRef, funnelRef, beltRef, bowlRef, spawnFallingChip, clearPlate };
 }
