@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { TIERS } from '../data/menu';
 import { artFor, VIEW_BOX } from '../data/foodArt';
 import { MONSTER_SVG, FUNNEL_SVG } from '../data/critters';
+import ClearButton from './ClearButton';
 import { fmt, cartEntries, totalItems, totalValue, verdictFor } from '../utils/cart';
 
 // The plate, the break-even meter and the running check. On a wide screen it
@@ -79,7 +80,10 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
       <aside className={`table${open ? ' open' : ''}`} aria-label="Your table" ref={panelRef}>
         <div className="table-head">
           <h2>Your table</h2>
-          <span>{n} plate{n === 1 ? '' : 's'}</span>
+          <span className="table-meta">
+            {n} plate{n === 1 ? '' : 's'}
+            <ClearButton count={n} onClear={() => { onReset(); setOpen(false); }} />
+          </span>
         </div>
 
         <div className="plate-zone" ref={plateZoneRef}>
@@ -124,6 +128,12 @@ export default function TablePanel({ tier, cart, settled, onSettle, onReset, pla
         )}
 
         {entries.length > 0 && <div className="check">
+          {/* The panel's header is hidden on a phone, so the clear button
+              comes with the check instead. */}
+          <div className="check-head only-narrow">
+            <span>Your order</span>
+            <ClearButton count={n} onClear={() => { onReset(); setOpen(false); }} />
+          </div>
           {entries.map((i) => (
               <div className="line" key={i.id}>
                 <svg

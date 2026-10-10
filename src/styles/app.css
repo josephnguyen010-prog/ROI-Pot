@@ -240,7 +240,44 @@
   letter-spacing: 0.01em;
   text-transform: uppercase;
 }
-.table-head span { color: var(--ink-3); font-size: 13px; }
+.table-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+/* A quiet text button until it is pressed once; then it asks, in red. */
+.clear-btn {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.clear-btn:hover { color: var(--ink); text-decoration-color: currentColor; }
+.clear-btn:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; border-radius: 2px; }
+.clear-btn.armed { color: var(--red); text-decoration-color: currentColor; }
+
+.check-head {
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 2px 0 6px;
+  color: var(--ink-3);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.check-head .clear-btn { letter-spacing: 0; text-transform: none; }
 
 .plate-zone {
   position: relative;
@@ -604,4 +641,5 @@
   .btn { padding: 11px 8px; font-size: 14px; white-space: nowrap; }
   .monster { width: 46px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); }
   .only-narrow { display: block; }
+  .check-head.only-narrow { display: flex; }
 }
